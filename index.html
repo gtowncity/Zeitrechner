@@ -6,116 +6,207 @@
   <title>Arbeitszeitrechner</title>
   <style>
     :root {
-      --bg-1: #f5f7fb;
-      --bg-2: #edf2ff;
-      --card: rgba(255, 255, 255, 0.72);
-      --card-border: rgba(255, 255, 255, 0.7);
-      --text: #111827;
+      --bg: #eef4ff;
+      --bg-2: #f8fbff;
+      --surface: rgba(255, 255, 255, 0.72);
+      --surface-strong: rgba(255, 255, 255, 0.88);
+      --border: rgba(255, 255, 255, 0.9);
+      --line: rgba(15, 23, 42, 0.08);
+      --text: #101828;
       --muted: #667085;
-      --primary: #0a84ff;
-      --primary-2: #5ac8fa;
-      --success: #16a34a;
-      --warning: #ea580c;
-      --danger: #dc2626;
-      --shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
-      --radius-xl: 28px;
-      --radius-lg: 20px;
-      --radius-md: 16px;
+      --blue: #0a84ff;
+      --blue-2: #5ac8fa;
+      --green: #16a34a;
+      --orange: #ea580c;
+      --red: #dc2626;
+      --shadow-lg: 0 24px 64px rgba(15, 23, 42, 0.14);
+      --shadow-md: 0 12px 28px rgba(15, 23, 42, 0.08);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 18px;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
-    body {
+    html, body {
       margin: 0;
+      min-height: 100%;
       font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
       color: var(--text);
       background:
-        radial-gradient(circle at top left, rgba(90, 200, 250, 0.35), transparent 28%),
-        radial-gradient(circle at top right, rgba(10, 132, 255, 0.18), transparent 24%),
-        linear-gradient(180deg, var(--bg-2), var(--bg-1));
-      min-height: 100vh;
-      padding: 24px;
+        radial-gradient(circle at 0% 0%, rgba(90, 200, 250, 0.35), transparent 26%),
+        radial-gradient(circle at 100% 10%, rgba(10, 132, 255, 0.22), transparent 24%),
+        radial-gradient(circle at 50% 100%, rgba(255, 255, 255, 0.9), transparent 30%),
+        linear-gradient(180deg, var(--bg), var(--bg-2));
     }
 
-    .shell {
-      max-width: 1100px;
+    body {
+      padding: 26px;
+    }
+
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 999px;
+      filter: blur(60px);
+      opacity: 0.5;
+    }
+
+    .orb.one {
+      width: 260px;
+      height: 260px;
+      background: rgba(90, 200, 250, 0.28);
+      top: -60px;
+      left: -40px;
+    }
+
+    .orb.two {
+      width: 240px;
+      height: 240px;
+      background: rgba(10, 132, 255, 0.18);
+      top: 80px;
+      right: -60px;
+    }
+
+    .orb.three {
+      width: 280px;
+      height: 280px;
+      background: rgba(255, 255, 255, 0.7);
+      bottom: -120px;
+      left: 40%;
+    }
+
+    .app {
+      max-width: 1180px;
       margin: 0 auto;
+      position: relative;
+      z-index: 1;
     }
 
     .hero {
-      margin-bottom: 24px;
-      padding: 34px 30px;
-      border-radius: 34px;
-      background: rgba(255, 255, 255, 0.58);
-      border: 1px solid rgba(255,255,255,0.7);
-      backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
-      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+      margin-bottom: 22px;
     }
 
-    .eyebrow {
+    .hero-card,
+    .mini-panel,
+    .panel,
+    .stat,
+    .live-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .hero-card {
+      border-radius: 36px;
+      padding: 28px;
+    }
+
+    .tag {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 12px;
+      padding: 9px 13px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.75);
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid rgba(255,255,255,0.95);
       color: var(--muted);
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 12px;
+      font-weight: 800;
       letter-spacing: 0.02em;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
     h1 {
       margin: 0 0 10px;
-      font-size: clamp(2rem, 4vw, 3.6rem);
-      line-height: 1;
-      letter-spacing: -0.04em;
+      font-size: clamp(2.4rem, 4vw, 4rem);
+      line-height: 0.95;
+      letter-spacing: -0.05em;
     }
 
-    .hero p {
+    .hero-card p {
       margin: 0;
       color: var(--muted);
-      font-size: 1.02rem;
-      max-width: 760px;
       line-height: 1.6;
+      max-width: 720px;
+      font-size: 1rem;
+    }
+
+    .hero-side {
+      display: grid;
+      gap: 18px;
+    }
+
+    .mini-panel {
+      border-radius: 28px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .mini-label {
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .mini-value {
+      font-size: clamp(1.4rem, 3vw, 2.1rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+    }
+
+    .mini-note {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
     }
 
     .layout {
       display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
+      grid-template-columns: 1.02fr 0.98fr;
       gap: 22px;
     }
 
-    .card {
-      background: var(--card);
-      border: 1px solid var(--card-border);
-      backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
-      box-shadow: var(--shadow);
-      border-radius: var(--radius-xl);
-      padding: 24px;
+    .panel {
+      border-radius: 32px;
+      padding: 22px;
     }
 
-    .card h2 {
-      margin: 0 0 16px;
-      font-size: 1.2rem;
+    .panel h2 {
+      margin: 0 0 8px;
+      font-size: 1.24rem;
       letter-spacing: -0.02em;
     }
 
-    .subtext {
+    .sub {
       color: var(--muted);
+      line-height: 1.55;
       font-size: 0.95rem;
-      line-height: 1.5;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
-    .input-grid {
+    .grid-2 {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-      margin-bottom: 16px;
+      gap: 14px;
     }
 
     .field {
@@ -125,30 +216,32 @@
     }
 
     .field label {
-      font-size: 0.9rem;
-      font-weight: 700;
+      font-size: 0.92rem;
+      font-weight: 800;
       color: #1f2937;
     }
 
     .field small {
       color: var(--muted);
-      line-height: 1.4;
+      line-height: 1.45;
+      font-size: 0.84rem;
     }
 
     input[type="time"] {
       width: 100%;
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      background: rgba(255,255,255,0.9);
-      border-radius: 16px;
-      padding: 15px 16px;
-      font-size: 1rem;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.92);
       color: var(--text);
+      padding: 15px 16px;
+      border-radius: 18px;
+      font-size: 1rem;
       outline: none;
       transition: 0.2s ease;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
     }
 
     input[type="time"]:focus {
-      border-color: rgba(10, 132, 255, 0.55);
+      border-color: rgba(10, 132, 255, 0.45);
       box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.12);
     }
 
@@ -156,24 +249,24 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 18px;
+      gap: 16px;
+      margin: 16px 0;
       padding: 18px;
-      border-radius: 20px;
+      border-radius: 22px;
       background: rgba(255,255,255,0.65);
-      border: 1px solid rgba(255,255,255,0.7);
-      margin: 10px 0 18px;
+      border: 1px solid rgba(255,255,255,0.88);
     }
 
     .toggle-copy strong {
       display: block;
-      margin-bottom: 4px;
-      font-size: 0.98rem;
+      margin-bottom: 5px;
+      font-size: 0.96rem;
     }
 
     .toggle-copy span {
       color: var(--muted);
-      font-size: 0.92rem;
-      line-height: 1.4;
+      font-size: 0.9rem;
+      line-height: 1.5;
     }
 
     .switch {
@@ -192,48 +285,68 @@
     .slider {
       position: absolute;
       inset: 0;
-      cursor: pointer;
-      background: #d1d5db;
-      transition: .25s;
       border-radius: 999px;
+      background: #d1d5db;
+      cursor: pointer;
+      transition: 0.25s ease;
     }
 
-    .slider:before {
-      position: absolute;
+    .slider::before {
       content: "";
-      height: 26px;
+      position: absolute;
       width: 26px;
+      height: 26px;
       left: 4px;
       top: 4px;
-      background: white;
-      transition: .25s;
       border-radius: 50%;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.16);
+      background: #fff;
+      transition: 0.25s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.16);
     }
 
     .switch input:checked + .slider {
-      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      background: linear-gradient(135deg, var(--blue), var(--blue-2));
     }
 
-    .switch input:checked + .slider:before {
+    .switch input:checked + .slider::before {
       transform: translateX(26px);
     }
 
-    .buttons {
+    .pills {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 13px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.82);
+      border: 1px solid rgba(255,255,255,0.92);
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #334155;
+    }
+
+    .button-row {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
-      margin-top: 18px;
+      margin-top: 6px;
     }
 
     button {
       border: 0;
-      border-radius: 16px;
+      border-radius: 18px;
       padding: 14px 18px;
-      font-size: 0.96rem;
-      font-weight: 700;
+      font-size: 0.95rem;
+      font-weight: 800;
       cursor: pointer;
-      transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
     }
 
     button:hover {
@@ -241,154 +354,231 @@
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--primary), var(--primary-2));
       color: white;
-      box-shadow: 0 14px 24px rgba(10, 132, 255, 0.22);
+      background: linear-gradient(135deg, var(--blue), var(--blue-2));
+      box-shadow: 0 14px 26px rgba(10, 132, 255, 0.22);
     }
 
     .btn-secondary {
-      background: rgba(255,255,255,0.9);
       color: var(--text);
-      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: rgba(255,255,255,0.94);
+      border: 1px solid var(--line);
+    }
+
+    .tiny {
+      margin-top: 16px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.85rem;
     }
 
     .stats {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 14px;
-      margin-top: 4px;
+      margin-top: 14px;
     }
 
     .stat {
-      background: rgba(255,255,255,0.7);
-      border: 1px solid rgba(255,255,255,0.75);
-      border-radius: 22px;
+      border-radius: 24px;
       padding: 18px;
-      min-height: 110px;
+      min-height: 116px;
+      box-shadow: var(--shadow-md);
     }
 
     .stat-label {
       color: var(--muted);
-      font-size: 0.85rem;
+      font-size: 0.84rem;
+      font-weight: 800;
       margin-bottom: 10px;
-      font-weight: 700;
     }
 
     .stat-value {
-      font-size: clamp(1.2rem, 3vw, 2rem);
-      line-height: 1.1;
-      letter-spacing: -0.03em;
-      font-weight: 800;
+      font-size: clamp(1.32rem, 3vw, 2.2rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1.04;
     }
 
     .stat-note {
-      margin-top: 8px;
+      margin-top: 9px;
       color: var(--muted);
       font-size: 0.9rem;
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
-    .pill-row {
+    .live-card {
+      border-radius: 26px;
+      padding: 18px;
+      margin-top: 16px;
+    }
+
+    .live-top {
       display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: 10px;
       flex-wrap: wrap;
-      margin: 18px 0 10px;
+      margin-bottom: 14px;
     }
 
-    .pill {
-      padding: 10px 12px;
+    .live-title {
+      font-size: 0.96rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.72);
-      border: 1px solid rgba(255,255,255,0.8);
-      font-size: 0.88rem;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(255,255,255,0.95);
       color: #334155;
-      font-weight: 700;
+      font-size: 0.86rem;
+      font-weight: 800;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 6px rgba(22, 163, 74, 0.12);
+    }
+
+    .live-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .live-metric {
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(255,255,255,0.88);
+    }
+
+    .live-metric .k {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .live-metric .v {
+      font-size: clamp(1.1rem, 2.4vw, 1.7rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
     }
 
     .status {
-      margin-top: 18px;
+      margin-top: 16px;
       border-radius: 22px;
-      padding: 18px;
-      font-weight: 700;
-      line-height: 1.5;
-      background: rgba(255,255,255,0.7);
-      border: 1px solid rgba(255,255,255,0.7);
+      padding: 16px 18px;
+      font-weight: 800;
+      line-height: 1.55;
+      border: 1px solid transparent;
     }
 
     .status.success {
       color: #14532d;
-      background: rgba(220, 252, 231, 0.82);
-      border-color: rgba(187, 247, 208, 0.9);
+      background: rgba(220, 252, 231, 0.9);
+      border-color: rgba(187, 247, 208, 0.95);
     }
 
     .status.warning {
       color: #9a3412;
-      background: rgba(255, 237, 213, 0.88);
-      border-color: rgba(254, 215, 170, 0.9);
+      background: rgba(255, 237, 213, 0.92);
+      border-color: rgba(254, 215, 170, 0.95);
     }
 
     .status.danger {
       color: #991b1b;
-      background: rgba(254, 226, 226, 0.88);
-      border-color: rgba(254, 202, 202, 0.9);
+      background: rgba(254, 226, 226, 0.92);
+      border-color: rgba(254, 202, 202, 0.95);
     }
 
-    .tiny {
-      margin-top: 16px;
+    .detail {
+      margin-top: 12px;
       color: var(--muted);
-      font-size: 0.86rem;
-      line-height: 1.5;
+      line-height: 1.65;
+      font-size: 0.9rem;
     }
 
-    .footer {
-      margin-top: 22px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.85rem;
-    }
-
-    @media (max-width: 920px) {
+    @media (max-width: 980px) {
+      .hero,
       .layout {
         grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 720px) {
       body {
         padding: 16px;
       }
 
-      .hero, .card {
+      .hero-card,
+      .panel,
+      .mini-panel {
         padding: 18px;
-        border-radius: 24px;
+        border-radius: 26px;
       }
 
-      .input-grid, .stats {
+      .grid-2,
+      .stats,
+      .live-grid {
         grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
-  <div class="shell">
+  <div class="backdrop">
+    <div class="orb one"></div>
+    <div class="orb two"></div>
+    <div class="orb three"></div>
+  </div>
+
+  <main class="app">
     <section class="hero">
-      <div class="eyebrow">Arbeitszeit · GitHub Pages · ohne Extras</div>
-      <h1>Arbeitszeitrechner</h1>
-      <p>
-        Gib deine Einstempelzeit ein und lass dir direkt deinen Feierabend,
-        deine Stunden bis zu einer Solluhrzeit und den Überschuss über die Sollzeit ausrechnen.
-      </p>
+      <div class="hero-card">
+        <div class="tag">Arbeitszeit · GitHub Pages · Live</div>
+        <h1>Arbeitszeitrechner</h1>
+        <p>
+          Feierabend automatisch berechnen, Solluhrzeit prüfen und live sehen,
+          wie viel Arbeitszeit dir ab der aktuellen Uhrzeit noch fehlt oder wie viel du schon drüber bist.
+        </p>
+      </div>
+
+      <div class="hero-side">
+        <div class="mini-panel">
+          <div class="mini-label">Aktuelle Uhrzeit</div>
+          <div class="mini-value" id="currentClockHero">--:--:--</div>
+          <div class="mini-note">Wird live aktualisiert</div>
+        </div>
+
+        <div class="mini-panel">
+          <div class="mini-label">Live Rest bis Feierabend</div>
+          <div class="mini-value" id="liveRemainingHero">--:-- h</div>
+          <div class="mini-note" id="liveRemainingHeroNote">basierend auf deiner Einstempelzeit</div>
+        </div>
+      </div>
     </section>
 
-    <div class="layout">
-      <section class="card">
+    <section class="layout">
+      <section class="panel">
         <h2>Eingaben</h2>
-        <div class="subtext">
+        <div class="sub">
           Standard: 8,25 Stunden Arbeitszeit mit fixer Pause von 12:00 bis 12:30 Uhr.<br>
           Freitag: 5 Stunden Arbeitszeit mit fixer Pause von 12:00 bis 12:15 Uhr.
         </div>
 
-        <div class="input-grid">
+        <div class="grid-2">
           <div class="field">
             <label for="startTime">Einstempelzeit</label>
             <input id="startTime" type="time" value="07:00" />
@@ -405,7 +595,7 @@
         <div class="toggle-wrap">
           <div class="toggle-copy">
             <strong>Freitag aktivieren</strong>
-            <span>Wechselt auf 5 Stunden Sollzeit und 15 Minuten Pause.</span>
+            <span>Dann rechnet er mit 5:00 Stunden Sollzeit und 15 Minuten Pause.</span>
           </div>
           <label class="switch" aria-label="Freitag aktivieren">
             <input id="fridayMode" type="checkbox" />
@@ -413,24 +603,25 @@
           </label>
         </div>
 
-        <div class="pill-row">
+        <div class="pills">
           <div class="pill" id="targetLabel">Sollzeit: 8:15 h</div>
           <div class="pill" id="breakLabel">Pause: 12:00 - 12:30</div>
         </div>
 
-        <div class="buttons">
+        <div class="button-row">
           <button class="btn-primary" id="calcBtn">Berechnen</button>
           <button class="btn-secondary" id="resetBtn">Zurücksetzen</button>
         </div>
 
         <div class="tiny">
-          Hinweis: Es wird mit einer festen Mittagspause gerechnet. Die Pause wird nur dann abgezogen,
-          wenn dein Zeitraum diese Pause auch wirklich überschneidet.
+          Die feste Pause wird nur dann abgezogen, wenn dein Zeitraum die Pause wirklich überschneidet.
+          Die Live-Anzeige nutzt immer automatisch die aktuelle Uhrzeit.
         </div>
       </section>
 
-      <section class="card">
+      <section class="panel">
         <h2>Ergebnis</h2>
+
         <div class="stats">
           <div class="stat">
             <div class="stat-label">Feierabend ab</div>
@@ -441,13 +632,13 @@
           <div class="stat">
             <div class="stat-label">Produktive Stunden bis Solluhrzeit</div>
             <div class="stat-value" id="workedValue">9:30 h</div>
-            <div class="stat-note" id="workedNote">Anwesenheit inkl. Pause wird extra angezeigt</div>
+            <div class="stat-note" id="workedNote">Anwesenheit wird extra gezeigt</div>
           </div>
 
           <div class="stat">
             <div class="stat-label">Pausenabzug</div>
             <div class="stat-value" id="pauseValue">0:30 h</div>
-            <div class="stat-note" id="pauseNote">abgezogen zwischen 12:00 und 12:30</div>
+            <div class="stat-note" id="pauseNote">abgezogen in der Pause</div>
           </div>
 
           <div class="stat">
@@ -457,18 +648,38 @@
           </div>
         </div>
 
-        <div class="status warning" id="statusBox">
-          Du bist bis zur Solluhrzeit 1:15 Stunden über deiner regulären Sollzeit.
+        <div class="live-card">
+          <div class="live-top">
+            <div class="live-title">Live ab jetzt</div>
+            <div class="live-badge"><span class="dot"></span><span id="currentClockBadge">--:--:--</span></div>
+          </div>
+
+          <div class="live-grid">
+            <div class="live-metric">
+              <div class="k">Rest bis Feierabend</div>
+              <div class="v" id="remainingValue">--:-- h</div>
+            </div>
+            <div class="live-metric">
+              <div class="k">Schon gearbeitet</div>
+              <div class="v" id="workedNowValue">--:-- h</div>
+            </div>
+            <div class="live-metric">
+              <div class="k">Fehlend / Überschuss jetzt</div>
+              <div class="v" id="remainingWorkValue">--:-- h</div>
+            </div>
+          </div>
         </div>
 
-        <div class="tiny" id="detailText">
-          Von 07:00 bis 17:00 Uhr sind es 10:00 Stunden Anwesenheit. Nach Abzug der Pause bleiben 9:30 Stunden Arbeitszeit.
+        <div class="status warning" id="statusBox">
+          Du bist bis zur Solluhrzeit 0:42 h über deiner Sollzeit.
+        </div>
+
+        <div class="detail" id="detailText">
+          Von 07:03 bis 16:30 Uhr sind es 9:27 Stunden Anwesenheit. Nach Abzug von 0:30 h Pause bleiben 8:57 h Arbeitszeit.
         </div>
       </section>
-    </div>
-
-    <div class="footer">Läuft als einfache statische Webseite auf GitHub Pages.</div>
-  </div>
+    </section>
+  </main>
 
   <script>
     const els = {
@@ -477,8 +688,10 @@
       fridayMode: document.getElementById('fridayMode'),
       calcBtn: document.getElementById('calcBtn'),
       resetBtn: document.getElementById('resetBtn'),
+
       targetLabel: document.getElementById('targetLabel'),
       breakLabel: document.getElementById('breakLabel'),
+
       leaveTimeValue: document.getElementById('leaveTimeValue'),
       leaveTimeNote: document.getElementById('leaveTimeNote'),
       workedValue: document.getElementById('workedValue'),
@@ -487,11 +700,21 @@
       pauseNote: document.getElementById('pauseNote'),
       diffValue: document.getElementById('diffValue'),
       diffNote: document.getElementById('diffNote'),
+
+      currentClockHero: document.getElementById('currentClockHero'),
+      currentClockBadge: document.getElementById('currentClockBadge'),
+      liveRemainingHero: document.getElementById('liveRemainingHero'),
+      liveRemainingHeroNote: document.getElementById('liveRemainingHeroNote'),
+
+      remainingValue: document.getElementById('remainingValue'),
+      workedNowValue: document.getElementById('workedNowValue'),
+      remainingWorkValue: document.getElementById('remainingWorkValue'),
+
       statusBox: document.getElementById('statusBox'),
       detailText: document.getElementById('detailText')
     };
 
-    const STORAGE_KEY = 'arbeitszeitrechner_v1';
+    const STORAGE_KEY = 'arbeitszeitrechner_v2';
 
     function getConfig(isFriday) {
       return isFriday
@@ -525,6 +748,13 @@
       return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
     }
 
+    function formatClockWithSeconds(date) {
+      const h = String(date.getHours()).padStart(2, '0');
+      const m = String(date.getMinutes()).padStart(2, '0');
+      const s = String(date.getSeconds()).padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    }
+
     function formatDuration(minutes, withSign = false) {
       const sign = minutes < 0 ? '-' : (withSign && minutes > 0 ? '+' : '');
       const absolute = Math.abs(minutes);
@@ -553,13 +783,18 @@
       return startMinutes + config.targetMinutes;
     }
 
-    function calculateWorkedUntil(startMinutes, targetMinutes, config) {
-      if (targetMinutes <= startMinutes) {
-        return null;
+    function calculateWorkedBetween(startMinutes, endMinutes, config) {
+      if (endMinutes <= startMinutes) {
+        return {
+          presenceMinutes: 0,
+          pauseDeduction: 0,
+          productiveMinutes: 0,
+          differenceMinutes: -config.targetMinutes
+        };
       }
 
-      const presenceMinutes = targetMinutes - startMinutes;
-      const pauseDeduction = overlapMinutes(startMinutes, targetMinutes, config.breakStart, config.breakEnd);
+      const presenceMinutes = endMinutes - startMinutes;
+      const pauseDeduction = overlapMinutes(startMinutes, endMinutes, config.breakStart, config.breakEnd);
       const productiveMinutes = presenceMinutes - pauseDeduction;
       const differenceMinutes = productiveMinutes - config.targetMinutes;
 
@@ -569,6 +804,16 @@
         productiveMinutes,
         differenceMinutes
       };
+    }
+
+    function getNowMinutes() {
+      const now = new Date();
+      return now.getHours() * 60 + now.getMinutes();
+    }
+
+    function setStatus(message, type) {
+      els.statusBox.className = `status ${type}`;
+      els.statusBox.textContent = message;
     }
 
     function updateLabels() {
@@ -591,18 +836,13 @@
       try {
         const data = JSON.parse(raw);
         if (data.startTime) els.startTime.value = data.startTime;
-        if (data.targetTime) els.targetTime.value = data.targetTime;
+        if (typeof data.targetTime === 'string') els.targetTime.value = data.targetTime;
         if (typeof data.fridayMode === 'boolean') els.fridayMode.checked = data.fridayMode;
       } catch {
       }
     }
 
-    function setStatus(message, type) {
-      els.statusBox.className = `status ${type}`;
-      els.statusBox.textContent = message;
-    }
-
-    function render() {
+    function renderStaticResults() {
       const config = getConfig(els.fridayMode.checked);
       updateLabels();
 
@@ -622,32 +862,34 @@
         els.workedValue.textContent = '—';
         els.pauseValue.textContent = '—';
         els.diffValue.textContent = '—';
+        els.workedNote.textContent = 'optional';
+        els.pauseNote.textContent = 'optional';
+        els.diffNote.textContent = 'optional';
         els.detailText.textContent = 'Optional kannst du zusätzlich eine Solluhrzeit eingeben.';
-        setStatus('Feierabend wurde berechnet. Für die zweite Auswertung bitte noch eine Solluhrzeit eingeben.', 'warning');
         saveState();
         return;
       }
 
-      const worked = calculateWorkedUntil(startMinutes, targetMinutes, config);
-      if (!worked) {
-        setStatus('Die Solluhrzeit muss nach der Einstempelzeit liegen.', 'danger');
+      if (targetMinutes <= startMinutes) {
         els.workedValue.textContent = '—';
         els.pauseValue.textContent = '—';
         els.diffValue.textContent = '—';
-        els.detailText.textContent = 'Bitte korrigiere die Uhrzeiten.';
+        els.detailText.textContent = 'Die Solluhrzeit muss nach der Einstempelzeit liegen.';
+        setStatus('Die Solluhrzeit muss nach der Einstempelzeit liegen.', 'danger');
         saveState();
         return;
       }
+
+      const worked = calculateWorkedBetween(startMinutes, targetMinutes, config);
 
       els.workedValue.textContent = formatDuration(worked.productiveMinutes).replace(' h', '') + ' h';
       els.pauseValue.textContent = formatDuration(worked.pauseDeduction).replace(' h', '') + ' h';
       els.diffValue.textContent = formatDuration(worked.differenceMinutes, true);
+      els.workedNote.textContent = `${formatDuration(worked.presenceMinutes).replace(' h', '')} Stunden Anwesenheit`;
       els.pauseNote.textContent = worked.pauseDeduction > 0
         ? `abgezogen in der Pause ${config.breakText}`
         : 'keine Pause in diesem Zeitraum abgezogen';
-
-      const presenceText = formatDuration(worked.presenceMinutes).replace(' h', '') + ' Stunden Anwesenheit';
-      els.workedNote.textContent = presenceText;
+      els.diffNote.textContent = 'gegenüber deiner Sollzeit';
 
       if (worked.differenceMinutes > 0) {
         setStatus(`Du bist bis zur Solluhrzeit ${formatDuration(worked.differenceMinutes)} über deiner Sollzeit.`, 'warning');
@@ -663,9 +905,61 @@
           ? ` Es fehlen noch ${formatDuration(Math.abs(worked.differenceMinutes))}.`
           : ' Genau deine Sollzeit ist erreicht.';
 
-      els.detailText.textContent = `Von ${formatClock(startMinutes)} bis ${formatClock(targetMinutes)} Uhr sind es ${formatDuration(worked.presenceMinutes).replace(' h', '')} Stunden Anwesenheit. Nach Abzug von ${formatDuration(worked.pauseDeduction).replace(' h', '')} Pause bleiben ${formatDuration(worked.productiveMinutes).replace(' h', '')} Stunden Arbeitszeit.${overText}`;
+      els.detailText.textContent =
+        `Von ${formatClock(startMinutes)} bis ${formatClock(targetMinutes)} Uhr sind es ${formatDuration(worked.presenceMinutes).replace(' h', '')} Stunden Anwesenheit. ` +
+        `Nach Abzug von ${formatDuration(worked.pauseDeduction).replace(' h', '')} Pause bleiben ${formatDuration(worked.productiveMinutes).replace(' h', '')} Stunden Arbeitszeit.${overText}`;
 
       saveState();
+    }
+
+    function renderLiveResults() {
+      const now = new Date();
+      const nowMinutes = getNowMinutes();
+      const config = getConfig(els.fridayMode.checked);
+      const startMinutes = parseTimeToMinutes(els.startTime.value);
+
+      els.currentClockHero.textContent = formatClockWithSeconds(now);
+      els.currentClockBadge.textContent = formatClockWithSeconds(now);
+
+      if (startMinutes === null) {
+        els.remainingValue.textContent = '—';
+        els.workedNowValue.textContent = '—';
+        els.remainingWorkValue.textContent = '—';
+        els.liveRemainingHero.textContent = '—';
+        els.liveRemainingHeroNote.textContent = 'bitte Startzeit eingeben';
+        return;
+      }
+
+      const leaveTime = calculateLeaveTime(startMinutes, config);
+      const workedNow = nowMinutes <= startMinutes
+        ? { productiveMinutes: 0, presenceMinutes: 0, pauseDeduction: 0, differenceMinutes: -config.targetMinutes }
+        : calculateWorkedBetween(startMinutes, nowMinutes, config);
+
+      const remainingUntilLeave = Math.max(0, leaveTime - nowMinutes);
+      const missingProductive = Math.max(0, config.targetMinutes - workedNow.productiveMinutes);
+      const overtimeNow = Math.max(0, workedNow.productiveMinutes - config.targetMinutes);
+
+      els.remainingValue.textContent = formatDuration(remainingUntilLeave).replace(' h', '') + ' h';
+      els.workedNowValue.textContent = formatDuration(workedNow.productiveMinutes).replace(' h', '') + ' h';
+
+      if (nowMinutes < startMinutes) {
+        els.remainingWorkValue.textContent = '-' + formatDuration(config.targetMinutes).replace(' h', '') + ' h';
+        els.liveRemainingHero.textContent = formatDuration(Math.max(0, leaveTime - nowMinutes)).replace(' h', '') + ' h';
+        els.liveRemainingHeroNote.textContent = `Start ist erst um ${formatClock(startMinutes)}`;
+      } else if (overtimeNow > 0) {
+        els.remainingWorkValue.textContent = '+' + formatDuration(overtimeNow).replace(' h', '') + ' h';
+        els.liveRemainingHero.textContent = '+0:00 h';
+        els.liveRemainingHeroNote.textContent = `du bist seit ${formatDuration(overtimeNow)} drüber`;
+      } else {
+        els.remainingWorkValue.textContent = '-' + formatDuration(missingProductive).replace(' h', '') + ' h';
+        els.liveRemainingHero.textContent = formatDuration(remainingUntilLeave).replace(' h', '') + ' h';
+        els.liveRemainingHeroNote.textContent = `Feierabend um ${formatClock(leaveTime)}`;
+      }
+    }
+
+    function renderAll() {
+      renderStaticResults();
+      renderLiveResults();
     }
 
     function resetAll() {
@@ -673,18 +967,19 @@
       els.targetTime.value = '17:00';
       els.fridayMode.checked = false;
       localStorage.removeItem(STORAGE_KEY);
-      render();
+      renderAll();
     }
 
     loadState();
-    updateLabels();
-    render();
+    renderAll();
 
-    els.calcBtn.addEventListener('click', render);
+    els.calcBtn.addEventListener('click', renderAll);
     els.resetBtn.addEventListener('click', resetAll);
-    els.fridayMode.addEventListener('change', render);
-    els.startTime.addEventListener('input', render);
-    els.targetTime.addEventListener('input', render);
+    els.fridayMode.addEventListener('change', renderAll);
+    els.startTime.addEventListener('input', renderAll);
+    els.targetTime.addEventListener('input', renderAll);
+
+    setInterval(renderLiveResults, 1000);
   </script>
 </body>
 </html>
