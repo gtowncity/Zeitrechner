@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'zeitrechner_state_v1';
+const STORAGE_KEY = 'zeitrechner_dark_atoss_v1';
 
 const elements = {
   startTime: document.getElementById('startTime'),
@@ -13,33 +13,24 @@ const elements = {
   importFeedback: document.getElementById('importFeedback'),
   pauseValidation: document.getElementById('pauseValidation'),
   pauseRowTemplate: document.getElementById('pauseRowTemplate'),
-
   modePill: document.getElementById('modePill'),
-  fixedPausePill: document.getElementById('fixedPausePill'),
+  fixedBreakChip: document.getElementById('fixedBreakChip'),
+  toggleCopy: document.getElementById('toggleCopy'),
   heroClock: document.getElementById('heroClock'),
-  heroLeaveTime: document.getElementById('heroLeaveTime'),
-  heroLeaveNote: document.getElementById('heroLeaveNote'),
+  heroLeave: document.getElementById('heroLeave'),
   heroRemaining: document.getElementById('heroRemaining'),
-  heroRemainingNote: document.getElementById('heroRemainingNote'),
-
   liveBadge: document.getElementById('liveBadge'),
   liveWorked: document.getElementById('liveWorked'),
   liveMissing: document.getElementById('liveMissing'),
   liveOvertime: document.getElementById('liveOvertime'),
   liveUntilLeave: document.getElementById('liveUntilLeave'),
-  liveUntilLeaveNote: document.getElementById('liveUntilLeaveNote'),
-
-  resultLeaveTime: document.getElementById('resultLeaveTime'),
-  resultLeaveNote: document.getElementById('resultLeaveNote'),
-  resultProductive: document.getElementById('resultProductive'),
-  resultPresence: document.getElementById('resultPresence'),
-  resultFixedPause: document.getElementById('resultFixedPause'),
-  resultFixedPauseNote: document.getElementById('resultFixedPauseNote'),
-  resultCustomPause: document.getElementById('resultCustomPause'),
-  resultCustomPauseNote: document.getElementById('resultCustomPauseNote'),
-  resultTotalBreaks: document.getElementById('resultTotalBreaks'),
-  resultDifference: document.getElementById('resultDifference'),
-  resultStatus: document.getElementById('resultStatus'),
+  targetProductive: document.getElementById('targetProductive'),
+  totalBreaks: document.getElementById('totalBreaks'),
+  deltaLabel: document.getElementById('deltaLabel'),
+  deltaValue: document.getElementById('deltaValue'),
+  deltaNote: document.getElementById('deltaNote'),
+  deltaCard: document.getElementById('deltaCard'),
+  statusLine: document.getElementById('statusLine'),
   detailText: document.getElementById('detailText')
 };
 
@@ -62,10 +53,10 @@ function loadState() {
       targetTime: typeof parsed.targetTime === 'string' ? parsed.targetTime : defaultState.targetTime,
       fridayMode: Boolean(parsed.fridayMode),
       pauses: Array.isArray(parsed.pauses)
-        ? parsed.pauses.map((pause) => ({
-            id: pause.id || makeId(),
-            from: typeof pause.from === 'string' ? pause.from : '',
-            to: typeof pause.to === 'string' ? pause.to : ''
+        ? parsed.pauses.map((p) => ({
+            id: p.id || makeId(),
+            from: typeof p.from === 'string' ? p.from : '',
+            to: typeof p.to === 'string' ? p.to : ''
           }))
         : []
     };
@@ -84,18 +75,8 @@ function makeId() {
 
 function getConfig() {
   return state.fridayMode
-    ? {
-        label: 'Freitag',
-        targetMinutes: 5 * 60,
-        fixedBreak: { start: 12 * 60, end: 12 * 60 + 15 },
-        fixedBreakLabel: '12:00 – 12:15'
-      }
-    : {
-        label: 'Standard',
-        targetMinutes: 8 * 60 + 15,
-        fixedBreak: { start: 12 * 60, end: 12 * 60 + 30 },
-        fixedBreakLabel: '12:00 – 12:30'
-      };
+    ? { label: 'Freitag', targetMinutes: 300, fixedBreak: { start: 720, end: 735 }, fixedBreakLabel: '12:00 bis 12:15' }
+    : { label: 'Standard', targetMinutes: 495, fixedBreak: { start: 720, end: 750 }, fixedBreakLabel: '12:00 bis 12:30' };
 }
 
 function parseTimeToMinutes(value) {
@@ -103,101 +84,6 @@ function parseTimeToMinutes(value) {
   const [hours, minutes] = value.split(':').map(Number);
   if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
   return hours * 60 + minutes;
-}
-
-
-function getCurrentTimeString() {
-  const now = new Date();
-  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-}
-
-function clearImportFeedback() {
-  if (!elements.importFeedback) return;
-  elements.importFeedback.textContent = '';
-  elements.importFeedback.className = 'inline-note hidden';
-}
-
-function setImportFeedback(message, kind = 'success') {
-  if (!elements.importFeedback) return;
-  elements.importFeedback.textContent = message;
-  elements.importFeedback.className = `inline-note import-${kind}`;
-}
-
-async function readAtossImportText() {
-  if (window.isSecureContext && navigator.clipboard?.readText) {
-    try {
-      const text = (await navigator.clipboard.readText()).trim();
-      if (text) return text;
-    } catch (error) {
-      // Fallback below
-    }
-  }
-
-  const manual = window.prompt('ATOSS-JSON hier einfügen:');
-  return typeof manual === 'string' ? manual.trim() : '';
-}
-
-function normalizeAtossImport(payload) {
-  if (!payload || typeof payload !== 'object') {
-    throw new Error('Kein gültiges JSON gefunden.');
-  }
-
-  if (typeof payload.startTime !== 'string' || parseTimeToMinutes(payload.startTime) === null) {
-    throw new Error('Startzeit fehlt oder ist ungültig.');
-  }
-
-  const pauses = Array.isArray(payload.breaks) ? payload.breaks : [];
-  const closeOpenPauseAtNow = payload.currentState === 'Pause';
-
-  return {
-    startTime: payload.startTime,
-    pauses: pauses.map((pause) => {
-      const from = typeof pause?.from === 'string' ? pause.from : '';
-      const to = typeof pause?.to === 'string' ? pause.to : '';
-
-      if (parseTimeToMinutes(from) === null) {
-        throw new Error('Mindestens eine Pause hat keine gültige Startzeit.');
-      }
-
-      const normalizedTo = parseTimeToMinutes(to) !== null
-        ? to
-        : closeOpenPauseAtNow
-          ? getCurrentTimeString()
-          : '';
-
-      return {
-        id: makeId(),
-        from,
-        to: normalizedTo
-      };
-    }),
-    closeOpenPauseAtNow
-  };
-}
-
-async function importAtossFromClipboard() {
-  clearImportFeedback();
-
-  try {
-    const text = await readAtossImportText();
-    if (!text) {
-      throw new Error('Kein Importtext vorhanden.');
-    }
-
-    const payload = JSON.parse(text);
-    const imported = normalizeAtossImport(payload);
-
-    state.startTime = imported.startTime;
-    state.pauses = imported.pauses;
-    renderAll();
-
-    const pauseCount = imported.pauses.length;
-    const pauseLabel = pauseCount === 1 ? 'Pause' : 'Pausen';
-    const extra = imported.closeOpenPauseAtNow ? ' Laufende Pause wurde bis jetzt geschlossen.' : '';
-    setImportFeedback(`ATOSS-Import übernommen: Start ${imported.startTime}, ${pauseCount} ${pauseLabel}.${extra}`, 'success');
-  } catch (error) {
-    setImportFeedback(error?.message || 'ATOSS-Import fehlgeschlagen.', 'error');
-  }
 }
 
 function formatClock(totalMinutes) {
@@ -215,9 +101,8 @@ function formatClockWithSeconds(date) {
   return `${hh}:${mm}:${ss}`;
 }
 
-function formatDuration(minutes, options = {}) {
-  const { signed = false, placeholder = '--:-- h' } = options;
-  if (minutes === null || minutes === undefined || Number.isNaN(minutes)) return placeholder;
+function formatDuration(minutes, signed = false) {
+  if (minutes === null || minutes === undefined || Number.isNaN(minutes)) return '--:-- h';
   const sign = minutes < 0 ? '-' : signed && minutes > 0 ? '+' : '';
   const abs = Math.abs(Math.round(minutes));
   const hours = Math.floor(abs / 60);
@@ -227,11 +112,8 @@ function formatDuration(minutes, options = {}) {
 
 function mergeIntervals(intervals) {
   if (!intervals.length) return [];
-  const sorted = [...intervals]
-    .map((interval) => ({ start: interval.start, end: interval.end }))
-    .sort((a, b) => a.start - b.start || a.end - b.end);
-
-  const merged = [sorted[0]];
+  const sorted = [...intervals].sort((a, b) => a.start - b.start || a.end - b.end);
+  const merged = [{ ...sorted[0] }];
   for (const interval of sorted.slice(1)) {
     const last = merged[merged.length - 1];
     if (interval.start <= last.end) {
@@ -252,105 +134,154 @@ function sumOverlap(intervals, rangeStart, rangeEnd) {
 }
 
 function getPauseAnalysis() {
-  const validCustom = [];
-  const invalidPauses = [];
-
+  const valid = [];
+  const invalid = [];
   state.pauses.forEach((pause, index) => {
     const from = parseTimeToMinutes(pause.from);
     const to = parseTimeToMinutes(pause.to);
 
     if (!pause.from && !pause.to) {
-      invalidPauses.push({ index, reason: 'Bitte Start und Ende der Pause eintragen.' });
+      invalid.push({ index, reason: 'Bitte Start und Ende der Pause eintragen.' });
       return;
     }
     if (from === null || to === null) {
-      invalidPauses.push({ index, reason: 'Zeitformat unvollständig.' });
+      invalid.push({ index, reason: 'Zeitformat unvollständig.' });
       return;
     }
     if (to <= from) {
-      invalidPauses.push({ index, reason: 'Pause muss nach der Startzeit enden.' });
+      invalid.push({ index, reason: 'Pause muss nach der Startzeit enden.' });
       return;
     }
-
-    validCustom.push({ start: from, end: to, index });
+    valid.push({ start: from, end: to, index });
   });
-
-  return { validCustom, invalidPauses };
+  return { valid, invalid };
 }
 
 function getAllBreakIntervals(config) {
-  const { validCustom, invalidPauses } = getPauseAnalysis();
+  const { valid, invalid } = getPauseAnalysis();
   const fixed = [{ start: config.fixedBreak.start, end: config.fixedBreak.end }];
-  const mergedAll = mergeIntervals([...fixed, ...validCustom]);
-  return { validCustom, invalidPauses, fixed, mergedAll };
+  const merged = mergeIntervals([...fixed, ...valid]);
+  return { valid, invalid, fixed, merged };
 }
 
 function calculateProductive(rangeStart, rangeEnd, config) {
   if (rangeStart === null || rangeEnd === null || rangeEnd <= rangeStart) {
+    const info = getPauseAnalysis();
     return {
       presence: 0,
       productive: 0,
       fixedBreakMinutes: 0,
       customBreakMinutes: 0,
       totalBreakMinutes: 0,
-      invalidPauses: getPauseAnalysis().invalidPauses,
-      validCustomCount: getPauseAnalysis().validCustom.length
+      invalidPauses: info.invalid
     };
   }
-
-  const { validCustom, invalidPauses, fixed, mergedAll } = getAllBreakIntervals(config);
+  const { invalid, fixed, merged } = getAllBreakIntervals(config);
   const presence = rangeEnd - rangeStart;
   const fixedBreakMinutes = sumOverlap(fixed, rangeStart, rangeEnd);
-  const totalBreakMinutes = sumOverlap(mergedAll, rangeStart, rangeEnd);
+  const totalBreakMinutes = sumOverlap(merged, rangeStart, rangeEnd);
   const customBreakMinutes = Math.max(0, totalBreakMinutes - fixedBreakMinutes);
   const productive = Math.max(0, presence - totalBreakMinutes);
-
-  return {
-    presence,
-    productive,
-    fixedBreakMinutes,
-    customBreakMinutes,
-    totalBreakMinutes,
-    invalidPauses,
-    validCustomCount: validCustom.length
-  };
+  return { presence, productive, fixedBreakMinutes, customBreakMinutes, totalBreakMinutes, invalidPauses: invalid };
 }
 
 function calculateLeaveTime(startMinutes, config) {
   if (startMinutes === null) return null;
-  const { mergedAll } = getAllBreakIntervals(config);
-  const relevantBreaks = mergedAll.filter((interval) => interval.end > startMinutes);
-
+  const { merged } = getAllBreakIntervals(config);
+  const relevant = merged.filter((interval) => interval.end > startMinutes);
   let current = startMinutes;
   let remaining = config.targetMinutes;
 
-  for (const interval of relevantBreaks) {
+  for (const interval of relevant) {
     if (interval.end <= current) continue;
-
     if (interval.start <= current) {
       current = Math.max(current, interval.end);
       continue;
     }
-
     const workChunk = interval.start - current;
-    if (remaining <= workChunk) {
-      return current + remaining;
-    }
-
+    if (remaining <= workChunk) return current + remaining;
     remaining -= workChunk;
     current = interval.end;
   }
-
   return current + remaining;
 }
 
 function setText(node, value) {
-  if (node) node.textContent = value;
+  node.textContent = value;
 }
 
-function setStatus(element, tone, text) {
-  element.className = `status-panel ${tone}`;
-  element.textContent = text;
+function setStatus(tone, text) {
+  elements.statusLine.className = `status-line ${tone}`;
+  elements.statusLine.textContent = text;
+}
+
+function clearImportFeedback() {
+  elements.importFeedback.textContent = '';
+  elements.importFeedback.className = 'inline-note hidden';
+}
+
+function setImportFeedback(message, tone) {
+  elements.importFeedback.textContent = message;
+  elements.importFeedback.className = `inline-note import-${tone}`;
+}
+
+function getCurrentTimeString() {
+  const now = new Date();
+  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+}
+
+async function readAtossImportText() {
+  if (window.isSecureContext && navigator.clipboard?.readText) {
+    try {
+      const text = (await navigator.clipboard.readText()).trim();
+      if (text) return text;
+    } catch {}
+  }
+  const manual = window.prompt('ATOSS-JSON hier einfügen:');
+  return typeof manual === 'string' ? manual.trim() : '';
+}
+
+function normalizeAtossImport(payload) {
+  if (!payload || typeof payload !== 'object') throw new Error('Kein gültiges JSON gefunden.');
+  if (typeof payload.startTime !== 'string' || parseTimeToMinutes(payload.startTime) === null) {
+    throw new Error('Startzeit fehlt oder ist ungültig.');
+  }
+
+  const closeOpenPauseAtNow = payload.currentState === 'Pause';
+  const pauses = Array.isArray(payload.breaks) ? payload.breaks : [];
+
+  return {
+    startTime: payload.startTime,
+    pauses: pauses.map((pause) => {
+      const from = typeof pause?.from === 'string' ? pause.from : '';
+      const to = typeof pause?.to === 'string' ? pause.to : '';
+      if (parseTimeToMinutes(from) === null) {
+        throw new Error('Mindestens eine Pause hat keine gültige Startzeit.');
+      }
+      const normalizedTo = parseTimeToMinutes(to) !== null ? to : closeOpenPauseAtNow ? getCurrentTimeString() : '';
+      return { id: makeId(), from, to: normalizedTo };
+    }),
+    closeOpenPauseAtNow
+  };
+}
+
+async function importAtossFromClipboard() {
+  clearImportFeedback();
+  try {
+    const text = await readAtossImportText();
+    if (!text) throw new Error('Kein Importtext vorhanden.');
+    const payload = JSON.parse(text);
+    const imported = normalizeAtossImport(payload);
+
+    state.startTime = imported.startTime;
+    state.pauses = imported.pauses;
+    renderAll();
+
+    const count = imported.pauses.length;
+    setImportFeedback(`ATOSS-Import übernommen: Start ${imported.startTime}, ${count} ${count === 1 ? 'Pause' : 'Pausen'}.`, 'success');
+  } catch (error) {
+    setImportFeedback(error?.message || 'ATOSS-Import fehlgeschlagen.', 'error');
+  }
 }
 
 function syncFormFromState() {
@@ -360,44 +291,40 @@ function syncFormFromState() {
 }
 
 function renderPauseRows() {
+  const { invalid } = getPauseAnalysis();
+  const invalidMap = new Map(invalid.map((item) => [item.index, item.reason]));
   elements.pauseList.innerHTML = '';
-  const pauseAnalysis = getPauseAnalysis();
-  const invalidByIndex = new Map(pauseAnalysis.invalidPauses.map((pause) => [pause.index, pause.reason]));
 
-  if (!state.pauses.length) {
-    elements.pauseHint.classList.remove('hidden');
-  } else {
-    elements.pauseHint.classList.add('hidden');
-  }
+  elements.pauseHint.classList.toggle('hidden', state.pauses.length > 0);
 
   state.pauses.forEach((pause, index) => {
-    const fragment = elements.pauseRowTemplate.content.cloneNode(true);
-    const row = fragment.querySelector('.pause-row');
-    const fromInput = fragment.querySelector('.pause-from');
-    const toInput = fragment.querySelector('.pause-to');
-    const removeButton = fragment.querySelector('[data-action="remove-pause"]');
-    const note = fragment.querySelector('.pause-row-note');
+    const node = elements.pauseRowTemplate.content.cloneNode(true);
+    const row = node.querySelector('.pause-row');
+    const from = node.querySelector('.pause-from');
+    const to = node.querySelector('.pause-to');
+    const remove = node.querySelector('.pause-remove');
+    const note = node.querySelector('.pause-row-note');
 
     row.dataset.id = pause.id;
-    fromInput.value = pause.from || '';
-    toInput.value = pause.to || '';
-    removeButton.dataset.id = pause.id;
+    from.value = pause.from;
+    to.value = pause.to;
+    remove.dataset.id = pause.id;
 
-    if (invalidByIndex.has(index)) {
+    if (invalidMap.has(index)) {
       row.classList.add('invalid');
-      note.textContent = invalidByIndex.get(index);
+      note.textContent = invalidMap.get(index);
     } else if (pause.from && pause.to) {
       note.textContent = `Pause wird von ${pause.from} bis ${pause.to} abgezogen.`;
     } else {
       note.textContent = 'Start und Ende eintragen oder die Pause löschen.';
     }
 
-    elements.pauseList.appendChild(fragment);
+    elements.pauseList.appendChild(node);
   });
 
-  if (pauseAnalysis.invalidPauses.length) {
+  if (invalid.length) {
     elements.pauseValidation.classList.remove('hidden');
-    elements.pauseValidation.textContent = `${pauseAnalysis.invalidPauses.length} ungültige Pause${pauseAnalysis.invalidPauses.length > 1 ? 'n werden' : ' wird'} aktuell ignoriert.`;
+    elements.pauseValidation.textContent = `${invalid.length} ungültige Pause${invalid.length > 1 ? 'n werden' : ' wird'} aktuell ignoriert.`;
   } else {
     elements.pauseValidation.classList.add('hidden');
     elements.pauseValidation.textContent = '';
@@ -405,34 +332,25 @@ function renderPauseRows() {
 }
 
 function renderMeta(config) {
-  setText(elements.modePill, `${config.label} · ${formatDuration(config.targetMinutes).replace(' h', ' h')}`);
-  setText(elements.fixedPausePill, `Feste Pause · ${config.fixedBreakLabel}`);
+  setText(elements.modePill, `${config.label} · ${formatDuration(config.targetMinutes)}`);
+  setText(elements.fixedBreakChip, `Feste Pause: ${config.fixedBreakLabel}`);
+  setText(elements.toggleCopy, state.fridayMode
+    ? '5:00 h Sollzeit, feste Pause 12:00 bis 12:15.'
+    : '8:15 h Sollzeit, feste Pause 12:00 bis 12:30.');
 }
 
-function renderHero(now, startMinutes, leaveTime, config) {
+function renderHero(now, startMinutes, leaveTime) {
   setText(elements.heroClock, formatClockWithSeconds(now));
-  setText(elements.heroLeaveTime, formatClock(leaveTime));
-  setText(elements.heroLeaveNote, `${config.label} · Sollzeit ${formatDuration(config.targetMinutes)}`);
+  setText(elements.heroLeave, formatClock(leaveTime));
 
   if (startMinutes === null) {
     setText(elements.heroRemaining, '--:-- h');
-    setText(elements.heroRemainingNote, 'Bitte zuerst eine Startzeit eintragen.');
     return;
   }
 
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
   const remaining = leaveTime - nowMinutes;
-
-  if (nowMinutes < startMinutes) {
-    setText(elements.heroRemaining, formatDuration(Math.max(0, remaining)));
-    setText(elements.heroRemainingNote, `Der Arbeitstag startet um ${formatClock(startMinutes)}.`);
-  } else if (remaining > 0) {
-    setText(elements.heroRemaining, formatDuration(remaining));
-    setText(elements.heroRemainingNote, 'Live ab aktueller Uhrzeit berechnet.');
-  } else {
-    setText(elements.heroRemaining, formatDuration(Math.abs(remaining), { signed: true }));
-    setText(elements.heroRemainingNote, 'Du bist bereits über deinem berechneten Feierabend.');
-  }
+  setText(elements.heroRemaining, formatDuration(Math.abs(remaining), remaining < 0));
 }
 
 function renderLive(now, startMinutes, leaveTime, config) {
@@ -443,7 +361,6 @@ function renderLive(now, startMinutes, leaveTime, config) {
     setText(elements.liveMissing, '--:-- h');
     setText(elements.liveOvertime, '+0:00 h');
     setText(elements.liveUntilLeave, '--:-- h');
-    setText(elements.liveUntilLeaveNote, 'Bitte zuerst eine Startzeit eingeben.');
     return;
   }
 
@@ -455,86 +372,59 @@ function renderLive(now, startMinutes, leaveTime, config) {
 
   setText(elements.liveWorked, formatDuration(workedNow.productive));
   setText(elements.liveMissing, formatDuration(missing));
-  setText(elements.liveOvertime, formatDuration(overtime, { signed: true }));
-
-  if (nowMinutes < startMinutes) {
-    setText(elements.liveUntilLeave, formatDuration(Math.max(0, untilLeave)));
-    setText(elements.liveUntilLeaveNote, `Noch nicht gestartet · Beginn ${formatClock(startMinutes)}`);
-  } else if (untilLeave >= 0) {
-    setText(elements.liveUntilLeave, formatDuration(untilLeave));
-    setText(elements.liveUntilLeaveNote, 'berechnet mit fester und zusätzlichen Pausen');
-  } else {
-    setText(elements.liveUntilLeave, formatDuration(Math.abs(untilLeave), { signed: true }));
-    setText(elements.liveUntilLeaveNote, 'Du bist bereits über deinem berechneten Feierabend.');
-  }
+  setText(elements.liveOvertime, formatDuration(overtime, true));
+  setText(elements.liveUntilLeave, formatDuration(Math.abs(untilLeave), untilLeave < 0));
 }
 
 function renderResult(startMinutes, targetMinutes, config) {
-  const leaveTime = calculateLeaveTime(startMinutes, config);
-  setText(elements.resultLeaveTime, formatClock(leaveTime));
-  setText(elements.resultLeaveNote, `${config.label} · Feierabend inkl. aller Pausen`);
-  setText(elements.resultFixedPauseNote, `Fixe Pause ${config.fixedBreakLabel}`);
-
   if (startMinutes === null) {
-    setText(elements.resultProductive, '--:-- h');
-    setText(elements.resultPresence, 'Anwesenheit: --:-- h');
-    setText(elements.resultFixedPause, '--:-- h');
-    setText(elements.resultCustomPause, '--:-- h');
-    setText(elements.resultTotalBreaks, '--:-- h');
-    setText(elements.resultDifference, '±0:00 h');
-    setStatus(elements.resultStatus, 'danger', 'Bitte gib eine gültige Einstempelzeit ein.');
-    setText(elements.detailText, 'Sobald eine gültige Startzeit eingetragen ist, wird hier die komplette Erklärung angezeigt.');
+    setText(elements.targetProductive, '--:-- h');
+    setText(elements.totalBreaks, '--:-- h');
+    setText(elements.deltaValue, '±0:00 h');
+    setText(elements.deltaLabel, 'Differenz zur Sollzeit');
+    setText(elements.deltaNote, 'Überschuss oder Fehlzeit');
+    setStatus('danger', 'Bitte gib eine gültige Einstempelzeit ein.');
+    setText(elements.detailText, 'Sobald eine gültige Startzeit eingetragen ist, erscheint hier die komplette Erklärung.');
     return;
   }
 
-  if (!state.targetTime) {
-    setText(elements.resultProductive, '--:-- h');
-    setText(elements.resultPresence, 'Anwesenheit: --:-- h');
-    setText(elements.resultFixedPause, '--:-- h');
-    setText(elements.resultCustomPause, '--:-- h');
-    setText(elements.resultTotalBreaks, '--:-- h');
-    setText(elements.resultDifference, '±0:00 h');
-    setStatus(elements.resultStatus, 'neutral', 'Optional kannst du zusätzlich eine Solluhrzeit eintragen.');
-    setText(elements.detailText, `Dein berechneter Feierabend liegt bei ${formatClock(leaveTime)}.`);
-    return;
-  }
+  const leaveTime = calculateLeaveTime(startMinutes, config);
 
   if (targetMinutes === null || targetMinutes <= startMinutes) {
-    setText(elements.resultProductive, '--:-- h');
-    setText(elements.resultPresence, 'Anwesenheit: --:-- h');
-    setText(elements.resultFixedPause, '--:-- h');
-    setText(elements.resultCustomPause, '--:-- h');
-    setText(elements.resultTotalBreaks, '--:-- h');
-    setText(elements.resultDifference, '±0:00 h');
-    setStatus(elements.resultStatus, 'danger', 'Die Solluhrzeit muss nach der Einstempelzeit liegen.');
-    setText(elements.detailText, 'Bitte korrigiere die Solluhrzeit. Sie muss später als die Einstempelzeit sein.');
+    const now = new Date();
+    const live = calculateProductive(startMinutes, Math.max(startMinutes, now.getHours() * 60 + now.getMinutes()), config);
+    const delta = live.productive - config.targetMinutes;
+
+    setText(elements.targetProductive, '--:-- h');
+    setText(elements.totalBreaks, formatDuration(live.totalBreakMinutes));
+    setText(elements.deltaValue, formatDuration(delta, true));
+    setText(elements.deltaLabel, delta > 0 ? 'Schon drüber' : 'Noch fehlend');
+    setText(elements.deltaNote, 'Live gegen Sollzeit');
+    setStatus('neutral', `Dein berechneter Feierabend liegt bei ${formatClock(leaveTime)}.`);
+    setText(elements.detailText, `Mit Start um ${formatClock(startMinutes)} und allen hinterlegten Pausen liegt dein Feierabend bei ${formatClock(leaveTime)}.`);
     return;
   }
 
   const result = calculateProductive(startMinutes, targetMinutes, config);
   const difference = result.productive - config.targetMinutes;
 
-  setText(elements.resultProductive, formatDuration(result.productive));
-  setText(elements.resultPresence, `Anwesenheit: ${formatDuration(result.presence)}`);
-  setText(elements.resultFixedPause, formatDuration(result.fixedBreakMinutes));
-  setText(elements.resultCustomPause, formatDuration(result.customBreakMinutes));
-  setText(elements.resultTotalBreaks, formatDuration(result.totalBreakMinutes));
-  setText(elements.resultDifference, formatDuration(difference, { signed: true, placeholder: '±0:00 h' }));
+  setText(elements.targetProductive, formatDuration(result.productive));
+  setText(elements.totalBreaks, formatDuration(result.totalBreakMinutes));
+  setText(elements.deltaValue, formatDuration(difference, true));
+  setText(elements.deltaLabel, 'Differenz zur Sollzeit');
+  setText(elements.deltaNote, 'Überschuss oder Fehlzeit');
 
   if (difference > 0) {
-    setStatus(elements.resultStatus, 'warning', `Bis ${state.targetTime} arbeitest du ${formatDuration(difference)} über deiner Sollzeit.`);
+    setStatus('warning', `Bis ${state.targetTime} arbeitest du ${formatDuration(difference)} über deiner Sollzeit.`);
   } else if (difference < 0) {
-    setStatus(elements.resultStatus, 'danger', `Bis ${state.targetTime} fehlen dir noch ${formatDuration(Math.abs(difference))} bis zur Sollzeit.`);
+    setStatus('danger', `Bis ${state.targetTime} fehlen dir noch ${formatDuration(Math.abs(difference))} bis zur Sollzeit.`);
   } else {
-    setStatus(elements.resultStatus, 'success', `Bis ${state.targetTime} triffst du deine Sollzeit genau.`);
+    setStatus('success', `Bis ${state.targetTime} triffst du deine Sollzeit genau.`);
   }
 
   const invalidCount = result.invalidPauses.length;
-  const invalidText = invalidCount
-    ? ` ${invalidCount} ungültige Zusatzpause${invalidCount > 1 ? 'n wurden' : ' wurde'} ignoriert.`
-    : '';
-
-  const detailEnding = difference > 0
+  const invalidText = invalidCount ? ` ${invalidCount} ungültige Zusatzpause${invalidCount > 1 ? 'n wurden' : ' wurde'} ignoriert.` : '';
+  const ending = difference > 0
     ? ` Du liegst damit ${formatDuration(difference)} über deiner Sollzeit.`
     : difference < 0
       ? ` Es fehlen noch ${formatDuration(Math.abs(difference))} bis zur Sollzeit.`
@@ -542,9 +432,7 @@ function renderResult(startMinutes, targetMinutes, config) {
 
   setText(
     elements.detailText,
-    `Von ${formatClock(startMinutes)} bis ${formatClock(targetMinutes)} sind es ${formatDuration(result.presence)} Anwesenheit. ` +
-      `Nach Abzug von ${formatDuration(result.fixedBreakMinutes)} fester Pause und ${formatDuration(result.customBreakMinutes)} zusätzlicher Pause bleiben ${formatDuration(result.productive)} Arbeitszeit.` +
-      `${detailEnding}${invalidText}`
+    `Von ${formatClock(startMinutes)} bis ${formatClock(targetMinutes)} sind es ${formatDuration(result.presence)} Anwesenheit. Nach Abzug von ${formatDuration(result.fixedBreakMinutes)} fester Pause und ${formatDuration(result.customBreakMinutes)} zusätzlicher Pause bleiben ${formatDuration(result.productive)} Arbeitszeit.${ending}${invalidText}`
   );
 }
 
@@ -559,9 +447,10 @@ function renderAll() {
   const now = new Date();
 
   renderMeta(config);
-  renderHero(now, startMinutes, leaveTime, config);
+  renderHero(now, startMinutes, leaveTime);
   renderLive(now, startMinutes, leaveTime, config);
   renderResult(startMinutes, targetMinutes, config);
+
   saveState();
 }
 
@@ -572,12 +461,7 @@ function addPause() {
 }
 
 function resetAll() {
-  state = {
-    startTime: defaultState.startTime,
-    targetTime: defaultState.targetTime,
-    fridayMode: defaultState.fridayMode,
-    pauses: []
-  };
+  state = { ...defaultState, pauses: [] };
   clearImportFeedback();
   renderAll();
 }
@@ -585,27 +469,20 @@ function resetAll() {
 function handlePauseListInput(event) {
   const row = event.target.closest('.pause-row');
   if (!row) return;
-  const id = row.dataset.id;
-  const pause = state.pauses.find((entry) => entry.id === id);
+  const pause = state.pauses.find((item) => item.id === row.dataset.id);
   if (!pause) return;
 
-  if (event.target.classList.contains('pause-from')) {
-    pause.from = event.target.value;
-  }
-
-  if (event.target.classList.contains('pause-to')) {
-    pause.to = event.target.value;
-  }
+  if (event.target.classList.contains('pause-from')) pause.from = event.target.value;
+  if (event.target.classList.contains('pause-to')) pause.to = event.target.value;
 
   clearImportFeedback();
   renderAll();
 }
 
 function handlePauseListClick(event) {
-  const button = event.target.closest('[data-action="remove-pause"]');
+  const button = event.target.closest('.pause-remove');
   if (!button) return;
-  const id = button.dataset.id;
-  state.pauses = state.pauses.filter((pause) => pause.id !== id);
+  state.pauses = state.pauses.filter((item) => item.id !== button.dataset.id);
   clearImportFeedback();
   renderAll();
 }
@@ -616,19 +493,16 @@ function bindEvents() {
     clearImportFeedback();
     renderAll();
   });
-
   elements.targetTime.addEventListener('input', (event) => {
     state.targetTime = event.target.value;
     clearImportFeedback();
     renderAll();
   });
-
   elements.fridayMode.addEventListener('change', (event) => {
     state.fridayMode = event.target.checked;
     clearImportFeedback();
     renderAll();
   });
-
   elements.addPauseButton.addEventListener('click', addPause);
   elements.calculateButton.addEventListener('click', renderAll);
   elements.importAtossButton.addEventListener('click', importAtossFromClipboard);
@@ -644,6 +518,6 @@ setInterval(() => {
   const startMinutes = parseTimeToMinutes(state.startTime);
   const leaveTime = calculateLeaveTime(startMinutes, config);
   const now = new Date();
-  renderHero(now, startMinutes, leaveTime, config);
+  renderHero(now, startMinutes, leaveTime);
   renderLive(now, startMinutes, leaveTime, config);
 }, 1000);
