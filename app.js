@@ -105,15 +105,10 @@ function parseTimeToMinutes(value) {
   return hours * 60 + minutes;
 }
 
-function getNowTimeString() {
+
+function getCurrentTimeString() {
   const now = new Date();
   return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-}
-
-function setImportFeedback(message, kind = 'info') {
-  if (!elements.importFeedback) return;
-  elements.importFeedback.textContent = message;
-  elements.importFeedback.className = `inline-note inline-note-${kind}`;
 }
 
 function clearImportFeedback() {
@@ -122,32 +117,52 @@ function clearImportFeedback() {
   elements.importFeedback.className = 'inline-note hidden';
 }
 
-function normalizeAtossPayload(payload) {
+function setImportFeedback(message, kind = 'success') {
+  if (!elements.importFeedback) return;
+  elements.importFeedback.textContent = message;
+  elements.importFeedback.className = `inline-note import-${kind}`;
+}
+
+async function readAtossImportText() {
+  if (window.isSecureContext && navigator.clipboard?.readText) {
+    try {
+      const text = (await navigator.clipboard.readText()).trim();
+      if (text) return text;
+    } catch (error) {
+      // Fallback below
+    }
+  }
+
+  const manual = window.prompt('ATOSS-JSON hier einfügen:');
+  return typeof manual === 'string' ? manual.trim() : '';
+}
+
+function normalizeAtossImport(payload) {
   if (!payload || typeof payload !== 'object') {
-    throw new Error('Zwischenablage enthält kein gültiges JSON-Objekt.');
+    throw new Error('Kein gültiges JSON gefunden.');
   }
 
   if (typeof payload.startTime !== 'string' || parseTimeToMinutes(payload.startTime) === null) {
-    throw new Error('ATOSS-Import enthält keine gültige Startzeit.');
+    throw new Error('Startzeit fehlt oder ist ungültig.');
   }
 
-  const rawBreaks = Array.isArray(payload.breaks) ? payload.breaks : [];
-  const closesOngoingPause = payload.currentState === 'Pause';
+  const pauses = Array.isArray(payload.breaks) ? payload.breaks : [];
+  const closeOpenPauseAtNow = payload.currentState === 'Pause';
 
   return {
     startTime: payload.startTime,
-    pauses: rawBreaks.map((pause) => {
+    pauses: pauses.map((pause) => {
       const from = typeof pause?.from === 'string' ? pause.from : '';
       const to = typeof pause?.to === 'string' ? pause.to : '';
 
       if (parseTimeToMinutes(from) === null) {
-        throw new Error('Mindestens eine Pause aus ATOSS hat keine gültige Startzeit.');
+        throw new Error('Mindestens eine Pause hat keine gültige Startzeit.');
       }
 
       const normalizedTo = parseTimeToMinutes(to) !== null
         ? to
-        : closesOngoingPause
-          ? getNowTimeString()
+        : closeOpenPauseAtNow
+          ? getCurrentTimeString()
           : '';
 
       return {
@@ -156,38 +171,30 @@ function normalizeAtossPayload(payload) {
         to: normalizedTo
       };
     }),
-    closesOngoingPause
+    closeOpenPauseAtNow
   };
 }
 
 async function importAtossFromClipboard() {
   clearImportFeedback();
 
-  if (!navigator.clipboard?.readText) {
-    setImportFeedback('Zwischenablage-Zugriff wird in diesem Browser nicht unterstützt.', 'error');
-    return;
-  }
-
   try {
-    const text = (await navigator.clipboard.readText()).trim();
-    if (!text) throw new Error('Zwischenablage ist leer.');
+    const text = await readAtossImportText();
+    if (!text) {
+      throw new Error('Kein Importtext vorhanden.');
+    }
 
     const payload = JSON.parse(text);
-    const imported = normalizeAtossPayload(payload);
+    const imported = normalizeAtossImport(payload);
 
     state.startTime = imported.startTime;
     state.pauses = imported.pauses;
     renderAll();
 
-    const count = imported.pauses.length;
-    const extra = imported.closesOngoingPause
-      ? ' Laufende Pause wurde bis jetzt geschlossen.'
-      : '';
-
-    setImportFeedback(
-      `ATOSS-Import übernommen: Start ${imported.startTime}, ${count} ${count === 1 ? 'Pause' : 'Pausen'}.${extra}`,
-      'success'
-    );
+    const pauseCount = imported.pauses.length;
+    const pauseLabel = pauseCount === 1 ? 'Pause' : 'Pausen';
+    const extra = imported.closeOpenPauseAtNow ? ' Laufende Pause wurde bis jetzt geschlossen.' : '';
+    setImportFeedback(`ATOSS-Import übernommen: Start ${imported.startTime}, ${pauseCount} ${pauseLabel}.${extra}`, 'success');
   } catch (error) {
     setImportFeedback(error?.message || 'ATOSS-Import fehlgeschlagen.', 'error');
   }

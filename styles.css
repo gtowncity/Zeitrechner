@@ -567,14 +567,14 @@ button:focus {
 }
 
 
-.inline-note-success {
-  border-color: rgba(34, 197, 94, 0.24);
-  background: rgba(34, 197, 94, 0.08);
-  color: #bbf7d0;
+.import-success {
+  color: var(--success);
+  background: var(--success-soft);
+  border: 1px solid rgba(21, 128, 61, 0.18);
 }
 
-.inline-note-error {
-  border-color: rgba(239, 68, 68, 0.24);
-  background: rgba(239, 68, 68, 0.08);
-  color: #fecaca;
+.import-error {
+  color: var(--danger);
+  background: var(--danger-soft);
+  border: 1px solid rgba(180, 35, 24, 0.18);
 }
