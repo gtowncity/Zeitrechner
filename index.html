@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zeitrechner</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page">
+    <header class="app-header">
+      <div class="title-block">
+        <h1>Zeitrechner</h1>
+        <p>Arbeitszeit sauber berechnen. Startzeit eingeben, Pausen pflegen, Feierabend und Live-Stand direkt sehen.</p>
+      </div>
+      <div class="status-pill is-ready">Bereit</div>
+    </header>
+
+    <div class="top-summary card compact-card">
+      <div class="summary-item">
+        <span>Aktuelle Uhrzeit</span>
+        <strong id="heroClock">--:--:--</strong>
+      </div>
+      <div class="summary-item">
+        <span>Feierabend</span>
+        <strong id="heroLeave">--:--</strong>
+      </div>
+      <div class="summary-item summary-wide">
+        <span>Rest bis Feierabend</span>
+        <strong id="heroRemaining">--:-- h</strong>
+      </div>
+    </div>
+
+    <section class="main-grid">
+      <section class="card" aria-labelledby="formTitle">
+        <div class="section-heading inline-heading">
+          <div>
+            <span class="section-kicker">Eingabe</span>
+            <h2 id="formTitle">Arbeitszeit einstellen</h2>
+          </div>
+          <div class="badge-row">
+            <span id="modeBadge" class="subtle-badge">Standard · 8:15 h</span>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Einstempelzeit</span>
+            <input id="startTime" type="time" value="07:00">
+          </label>
+
+          <label class="field">
+            <span>Solluhrzeit</span>
+            <input id="targetTime" type="time" value="17:00">
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <strong>Freitag aktivieren</strong>
+            <p>5:00 h Sollzeit, feste Pause 12:00 bis 12:15.</p>
+          </div>
+          <label class="switch" aria-label="Freitag aktivieren">
+            <input id="fridayMode" type="checkbox">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="inline-note" id="fixedBreakInfo">Feste Pause: 12:00 bis 12:30</div>
+
+        <div class="section-divider"></div>
+
+        <div class="section-heading inline-heading small-gap">
+          <div>
+            <span class="section-kicker">Zusätzliche Pausen</span>
+            <h3>Eigene Austempelzeiten</h3>
+          </div>
+          <button id="addPauseBtn" class="button-ghost" type="button">Pause hinzufügen</button>
+        </div>
+
+        <div id="pauseList" class="pause-list"></div>
+        <div id="pauseHint" class="muted empty-hint">Keine zusätzlichen Pausen angelegt.</div>
+        <div id="pauseValidation" class="notice notice-warning hidden"></div>
+
+        <div class="button-row">
+          <button id="calcBtn" class="button-primary" type="button">Neu berechnen</button>
+          <button id="resetBtn" class="button-secondary" type="button">Zurücksetzen</button>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="summaryTitle">
+        <div class="section-heading inline-heading">
+          <div>
+            <span class="section-kicker">Live + Ergebnis</span>
+            <h2 id="summaryTitle">Übersicht</h2>
+          </div>
+          <span id="liveBadge" class="subtle-badge">--:--:--</span>
+        </div>
+
+        <div class="metrics-grid compact">
+          <div class="metric">
+            <span>Jetzt gearbeitet</span>
+            <strong id="liveWorked">--:-- h</strong>
+          </div>
+          <div class="metric">
+            <span>Noch fehlend</span>
+            <strong id="liveMissing">--:-- h</strong>
+          </div>
+          <div class="metric">
+            <span>Schon drüber</span>
+            <strong id="liveOvertime">+0:00 h</strong>
+          </div>
+          <div class="metric">
+            <span>Rest bis Feierabend</span>
+            <strong id="liveUntilLeave">--:-- h</strong>
+          </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <div class="metrics-grid compact second-grid">
+          <div class="metric">
+            <span>Effektive Zeit bis Solluhrzeit</span>
+            <strong id="targetProductive">--:-- h</strong>
+          </div>
+          <div class="metric">
+            <span>Gesamte Pausen</span>
+            <strong id="targetBreaks">--:-- h</strong>
+          </div>
+          <div class="metric metric-wide">
+            <span>Differenz zur Sollzeit</span>
+            <strong id="targetDiff">--:-- h</strong>
+          </div>
+        </div>
+
+        <div id="statusBox" class="notice notice-info">Bereit zur Berechnung.</div>
+        <p id="detailText" class="detail-text">Trage links deine Zeiten ein. Der Rechner berücksichtigt feste und eigene Pausen ohne Doppelabzug.</p>
+      </section>
+    </section>
+  </main>
+
+  <template id="pauseRowTemplate">
+    <div class="pause-row">
+      <label class="field">
+        <span>Von</span>
+        <input class="pause-from" type="time">
+      </label>
+      <label class="field">
+        <span>Bis</span>
+        <input class="pause-to" type="time">
+      </label>
+      <button class="pause-remove" type="button" title="Pause löschen">×</button>
+    </div>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
