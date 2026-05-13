@@ -8,49 +8,48 @@
 </head>
 <body>
   <main class="page">
-    <header class="app-header">
-      <div class="title-block">
+    <header class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">Zeitrechner</div>
         <h1>Zeitrechner</h1>
-        <p>Arbeitszeit sauber berechnen. Startzeit eingeben, Pausen pflegen, Feierabend und Live-Stand direkt sehen.</p>
+        <p>Arbeitszeit sauber berechnen. Startzeit eingeben, Pausen pflegen und direkt sehen, wann Feierabend ist.</p>
       </div>
-      <div class="status-pill is-ready">Bereit</div>
+      <div class="status-pill">Bereit</div>
     </header>
 
-    <div class="top-summary card compact-card">
-      <div class="summary-item">
-        <span>Aktuelle Uhrzeit</span>
+    <section class="summary-bar" aria-label="Tagesübersicht">
+      <article class="summary-item">
+        <span class="label">Aktuelle Uhrzeit</span>
         <strong id="heroClock">--:--:--</strong>
-      </div>
-      <div class="summary-item">
-        <span>Feierabend</span>
+      </article>
+      <article class="summary-item">
+        <span class="label">Feierabend</span>
         <strong id="heroLeave">--:--</strong>
-      </div>
-      <div class="summary-item summary-wide">
-        <span>Rest bis Feierabend</span>
+      </article>
+      <article class="summary-item summary-accent">
+        <span class="label">Rest bis Feierabend</span>
         <strong id="heroRemaining">--:-- h</strong>
-      </div>
-    </div>
+      </article>
+    </section>
 
-    <section class="main-grid">
-      <section class="card" aria-labelledby="formTitle">
-        <div class="section-heading inline-heading">
+    <section class="workspace">
+      <section class="panel input-panel" aria-labelledby="inputTitle">
+        <div class="panel-head">
           <div>
-            <span class="section-kicker">Eingabe</span>
-            <h2 id="formTitle">Arbeitszeit einstellen</h2>
+            <span class="section-tag">Eingabe</span>
+            <h2 id="inputTitle">Arbeitszeit einstellen</h2>
           </div>
-          <div class="badge-row">
-            <span id="modeBadge" class="subtle-badge">Standard · 8:15 h</span>
-          </div>
+          <span class="mode-pill" id="modePill">Standard · 8:15 h</span>
         </div>
 
-        <div class="form-grid">
+        <div class="field-grid">
           <label class="field">
-            <span>Einstempelzeit</span>
+            <span class="field-label">Einstempelzeit</span>
             <input id="startTime" type="time" value="07:00">
           </label>
 
           <label class="field">
-            <span>Solluhrzeit</span>
+            <span class="field-label">Solluhrzeit</span>
             <input id="targetTime" type="time" value="17:00">
           </label>
         </div>
@@ -58,7 +57,7 @@
         <div class="toggle-row">
           <div>
             <strong>Freitag aktivieren</strong>
-            <p>5:00 h Sollzeit, feste Pause 12:00 bis 12:15.</p>
+            <p id="toggleCopy">5:00 h Sollzeit, feste Pause 12:00 bis 12:15.</p>
           </div>
           <label class="switch" aria-label="Freitag aktivieren">
             <input id="fridayMode" type="checkbox">
@@ -66,74 +65,64 @@
           </label>
         </div>
 
-        <div class="inline-note" id="fixedBreakInfo">Feste Pause: 12:00 bis 12:30</div>
+        <div class="chip-row">
+          <span class="info-chip" id="fixedBreakChip">Feste Pause: 12:00 bis 12:30</span>
+        </div>
 
-        <div class="section-divider"></div>
-
-        <div class="section-heading inline-heading small-gap">
+        <div class="subsection-head">
           <div>
-            <span class="section-kicker">Zusätzliche Pausen</span>
+            <span class="section-tag">Zusätzliche Pausen</span>
             <h3>Eigene Austempelzeiten</h3>
           </div>
-          <button id="addPauseBtn" class="button-ghost" type="button">Pause hinzufügen</button>
+          <button id="addPauseBtn" class="button button-ghost" type="button">Pause hinzufügen</button>
         </div>
 
         <div id="pauseList" class="pause-list"></div>
-        <div id="pauseHint" class="muted empty-hint">Keine zusätzlichen Pausen angelegt.</div>
-        <div id="pauseValidation" class="notice notice-warning hidden"></div>
+        <p id="pauseHint" class="helper-text">Keine zusätzlichen Pausen angelegt.</p>
+        <p id="pauseValidation" class="helper-text helper-error hidden"></p>
 
-        <div class="button-row">
-          <button id="calcBtn" class="button-primary" type="button">Neu berechnen</button>
-          <button id="resetBtn" class="button-secondary" type="button">Zurücksetzen</button>
+        <div class="actions">
+          <button id="calcBtn" class="button button-primary" type="button">Neu berechnen</button>
+          <button id="resetBtn" class="button button-secondary" type="button">Zurücksetzen</button>
         </div>
       </section>
 
-      <section class="card" aria-labelledby="summaryTitle">
-        <div class="section-heading inline-heading">
+      <section class="panel result-panel" aria-labelledby="overviewTitle">
+        <div class="panel-head panel-head-tight">
           <div>
-            <span class="section-kicker">Live + Ergebnis</span>
-            <h2 id="summaryTitle">Übersicht</h2>
+            <span class="section-tag">Übersicht</span>
+            <h2 id="overviewTitle">Stand jetzt</h2>
           </div>
-          <span id="liveBadge" class="subtle-badge">--:--:--</span>
+          <span class="live-clock" id="liveBadge">--:--:--</span>
         </div>
 
-        <div class="metrics-grid compact">
-          <div class="metric">
-            <span>Jetzt gearbeitet</span>
+        <div class="metrics-grid">
+          <article class="metric-card metric-primary">
+            <span class="label">Jetzt gearbeitet</span>
             <strong id="liveWorked">--:-- h</strong>
-          </div>
-          <div class="metric">
-            <span>Noch fehlend</span>
-            <strong id="liveMissing">--:-- h</strong>
-          </div>
-          <div class="metric">
-            <span>Schon drüber</span>
-            <strong id="liveOvertime">+0:00 h</strong>
-          </div>
-          <div class="metric">
-            <span>Rest bis Feierabend</span>
-            <strong id="liveUntilLeave">--:-- h</strong>
-          </div>
-        </div>
+            <small>effektive Arbeitszeit bis jetzt</small>
+          </article>
 
-        <div class="section-divider"></div>
+          <article class="metric-card" id="deltaCard">
+            <span class="label" id="deltaLabel">Noch fehlend</span>
+            <strong id="liveDelta">--:-- h</strong>
+            <small id="deltaNote">bis zur Sollzeit</small>
+          </article>
 
-        <div class="metrics-grid compact second-grid">
-          <div class="metric">
-            <span>Effektive Zeit bis Solluhrzeit</span>
+          <article class="metric-card">
+            <span class="label">Effektive Zeit bis Solluhrzeit</span>
             <strong id="targetProductive">--:-- h</strong>
-          </div>
-          <div class="metric">
-            <span>Gesamte Pausen</span>
-            <strong id="targetBreaks">--:-- h</strong>
-          </div>
-          <div class="metric metric-wide">
-            <span>Differenz zur Sollzeit</span>
-            <strong id="targetDiff">--:-- h</strong>
-          </div>
+            <small id="targetPresence">Anwesenheit --:-- h</small>
+          </article>
+
+          <article class="metric-card">
+            <span class="label">Gesamte Pausen</span>
+            <strong id="totalBreaks">--:-- h</strong>
+            <small id="breakSplit">fix --:-- h · extra --:-- h</small>
+          </article>
         </div>
 
-        <div id="statusBox" class="notice notice-info">Bereit zur Berechnung.</div>
+        <div id="statusLine" class="status-line">Bereit zur Berechnung.</div>
         <p id="detailText" class="detail-text">Trage links deine Zeiten ein. Der Rechner berücksichtigt feste und eigene Pausen ohne Doppelabzug.</p>
       </section>
     </section>
@@ -141,12 +130,12 @@
 
   <template id="pauseRowTemplate">
     <div class="pause-row">
-      <label class="field">
-        <span>Von</span>
+      <label class="field mini-field">
+        <span class="field-label">Von</span>
         <input class="pause-from" type="time">
       </label>
-      <label class="field">
-        <span>Bis</span>
+      <label class="field mini-field">
+        <span class="field-label">Bis</span>
         <input class="pause-to" type="time">
       </label>
       <button class="pause-remove" type="button" title="Pause löschen">×</button>
