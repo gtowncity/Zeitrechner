@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'zeitrechner_compact_v2';
+const STORAGE_KEY = 'zeitrechner_v4';
 
 const elements = {
   startTime: document.getElementById('startTime'),
@@ -11,20 +11,23 @@ const elements = {
   pauseHint: document.getElementById('pauseHint'),
   pauseValidation: document.getElementById('pauseValidation'),
   pauseRowTemplate: document.getElementById('pauseRowTemplate'),
-  modeBadge: document.getElementById('modeBadge'),
-  fixedBreakInfo: document.getElementById('fixedBreakInfo'),
+  modePill: document.getElementById('modePill'),
+  toggleCopy: document.getElementById('toggleCopy'),
+  fixedBreakChip: document.getElementById('fixedBreakChip'),
   heroClock: document.getElementById('heroClock'),
   heroLeave: document.getElementById('heroLeave'),
   heroRemaining: document.getElementById('heroRemaining'),
   liveBadge: document.getElementById('liveBadge'),
   liveWorked: document.getElementById('liveWorked'),
-  liveMissing: document.getElementById('liveMissing'),
-  liveOvertime: document.getElementById('liveOvertime'),
-  liveUntilLeave: document.getElementById('liveUntilLeave'),
+  liveDelta: document.getElementById('liveDelta'),
+  deltaLabel: document.getElementById('deltaLabel'),
+  deltaNote: document.getElementById('deltaNote'),
+  deltaCard: document.getElementById('deltaCard'),
   targetProductive: document.getElementById('targetProductive'),
-  targetBreaks: document.getElementById('targetBreaks'),
-  targetDiff: document.getElementById('targetDiff'),
-  statusBox: document.getElementById('statusBox'),
+  targetPresence: document.getElementById('targetPresence'),
+  totalBreaks: document.getElementById('totalBreaks'),
+  breakSplit: document.getElementById('breakSplit'),
+  statusLine: document.getElementById('statusLine'),
   detailText: document.getElementById('detailText')
 };
 
@@ -39,16 +42,20 @@ let state = loadState();
 
 function loadState() {
   try {
-    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { ...defaultState };
+    const parsed = JSON.parse(raw);
     return {
-      startTime: raw.startTime || defaultState.startTime,
-      targetTime: typeof raw.targetTime === 'string' ? raw.targetTime : defaultState.targetTime,
-      fridayMode: !!raw.fridayMode,
-      pauses: Array.isArray(raw.pauses) ? raw.pauses.map((p) => ({
-        id: p.id || makeId(),
-        from: typeof p.from === 'string' ? p.from : '',
-        to: typeof p.to === 'string' ? p.to : ''
-      })) : []
+      startTime: typeof parsed.startTime === 'string' ? parsed.startTime : defaultState.startTime,
+      targetTime: typeof parsed.targetTime === 'string' ? parsed.targetTime : defaultState.targetTime,
+      fridayMode: Boolean(parsed.fridayMode),
+      pauses: Array.isArray(parsed.pauses)
+        ? parsed.pauses.map((pause) => ({
+            id: pause.id || cryptoRandomId(),
+            from: typeof pause.from === 'string' ? pause.from : '',
+            to: typeof pause.to === 'string' ? pause.to : ''
+          }))
+        : []
     };
   } catch {
     return { ...defaultState };
@@ -59,20 +66,20 @@ function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
-function makeId() {
+function cryptoRandomId() {
   return `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
 function getConfig() {
   return state.fridayMode
     ? {
-        label: 'Freitag',
-        targetMinutes: 5 * 60,
+        modeLabel: 'Freitag',
+        targetMinutes: 300,
         fixedBreak: { start: 12 * 60, end: 12 * 60 + 15 },
         fixedBreakLabel: '12:00 bis 12:15'
       }
     : {
-        label: 'Standard',
+        modeLabel: 'Standard',
         targetMinutes: 8 * 60 + 15,
         fixedBreak: { start: 12 * 60, end: 12 * 60 + 30 },
         fixedBreakLabel: '12:00 bis 12:30'
@@ -81,55 +88,60 @@ function getConfig() {
 
 function parseTimeToMinutes(value) {
   if (!value || !value.includes(':')) return null;
-  const [h, m] = value.split(':').map(Number);
-  if (Number.isNaN(h) || Number.isNaN(m)) return null;
-  return h * 60 + m;
+  const [hours, minutes] = value.split(':').map(Number);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
+  return hours * 60 + minutes;
 }
 
 function formatClock(totalMinutes) {
   if (totalMinutes === null || totalMinutes === undefined || Number.isNaN(totalMinutes)) return '--:--';
   const normalized = ((Math.round(totalMinutes) % 1440) + 1440) % 1440;
-  const h = Math.floor(normalized / 60);
-  const m = normalized % 60;
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  const hours = Math.floor(normalized / 60);
+  const minutes = normalized % 60;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
 function formatClockWithSeconds(date) {
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+  const h = String(date.getHours()).padStart(2, '0');
+  const m = String(date.getMinutes()).padStart(2, '0');
+  const s = String(date.getSeconds()).padStart(2, '0');
+  return `${h}:${m}:${s}`;
 }
 
 function formatDuration(minutes, signed = false) {
   if (minutes === null || minutes === undefined || Number.isNaN(minutes)) return '--:-- h';
-  const sign = minutes < 0 ? '-' : signed && minutes > 0 ? '+' : '';
-  const abs = Math.abs(Math.round(minutes));
-  const h = Math.floor(abs / 60);
-  const m = abs % 60;
-  return `${sign}${h}:${String(m).padStart(2, '0')} h`;
+  const rounded = Math.round(minutes);
+  const prefix = rounded < 0 ? '-' : signed && rounded > 0 ? '+' : '';
+  const absolute = Math.abs(rounded);
+  const hours = Math.floor(absolute / 60);
+  const mins = absolute % 60;
+  return `${prefix}${hours}:${String(mins).padStart(2, '0')} h`;
 }
 
 function mergeIntervals(intervals) {
   if (!intervals.length) return [];
   const sorted = intervals
-    .map((i) => ({ start: i.start, end: i.end }))
+    .map((interval) => ({ start: interval.start, end: interval.end }))
     .sort((a, b) => a.start - b.start || a.end - b.end);
+
   const merged = [sorted[0]];
-  for (const current of sorted.slice(1)) {
+  for (const interval of sorted.slice(1)) {
     const last = merged[merged.length - 1];
-    if (current.start <= last.end) {
-      last.end = Math.max(last.end, current.end);
+    if (interval.start <= last.end) {
+      last.end = Math.max(last.end, interval.end);
     } else {
-      merged.push(current);
+      merged.push(interval);
     }
   }
   return merged;
 }
 
-function overlap(interval, start, end) {
-  return Math.max(0, Math.min(interval.end, end) - Math.max(interval.start, start));
+function overlap(interval, rangeStart, rangeEnd) {
+  return Math.max(0, Math.min(interval.end, rangeEnd) - Math.max(interval.start, rangeStart));
 }
 
-function sumOverlap(intervals, start, end) {
-  return intervals.reduce((sum, interval) => sum + overlap(interval, start, end), 0);
+function sumOverlap(intervals, rangeStart, rangeEnd) {
+  return intervals.reduce((sum, interval) => sum + overlap(interval, rangeStart, rangeEnd), 0);
 }
 
 function getPauseAnalysis() {
@@ -149,7 +161,7 @@ function getPauseAnalysis() {
       return;
     }
     if (to <= from) {
-      invalid.push({ index, reason: 'Pause muss nach der Startzeit enden.' });
+      invalid.push({ index, reason: 'Pause muss nach ihrer Startzeit enden.' });
       return;
     }
 
@@ -163,53 +175,50 @@ function getBreakData(config) {
   const { validCustom, invalid } = getPauseAnalysis();
   const fixed = [{ start: config.fixedBreak.start, end: config.fixedBreak.end }];
   const mergedAll = mergeIntervals([...fixed, ...validCustom]);
-  return { validCustom, invalid, fixed, mergedAll };
+  return { fixed, validCustom, invalid, mergedAll };
 }
 
-function calculateProductive(start, end, config) {
-  if (start === null || end === null || end <= start) {
+function calculateProductive(startMinutes, endMinutes, config) {
+  if (startMinutes === null || endMinutes === null || endMinutes <= startMinutes) {
     return { presence: 0, productive: 0, fixedBreak: 0, customBreak: 0, totalBreak: 0 };
   }
 
   const { fixed, mergedAll } = getBreakData(config);
-  const presence = end - start;
-  const fixedBreak = sumOverlap(fixed, start, end);
-  const totalBreak = sumOverlap(mergedAll, start, end);
+  const presence = endMinutes - startMinutes;
+  const fixedBreak = sumOverlap(fixed, startMinutes, endMinutes);
+  const totalBreak = sumOverlap(mergedAll, startMinutes, endMinutes);
   const customBreak = Math.max(0, totalBreak - fixedBreak);
   const productive = Math.max(0, presence - totalBreak);
 
   return { presence, productive, fixedBreak, customBreak, totalBreak };
 }
 
-function calculateLeaveTime(start, config) {
-  if (start === null) return null;
+function calculateLeaveTime(startMinutes, config) {
+  if (startMinutes === null) return null;
   const { mergedAll } = getBreakData(config);
-  const relevant = mergedAll.filter((i) => i.end > start);
-  let current = start;
+  const relevant = mergedAll.filter((interval) => interval.end > startMinutes);
+
+  let cursor = startMinutes;
   let remaining = config.targetMinutes;
 
   for (const interval of relevant) {
-    if (interval.end <= current) continue;
-    if (interval.start <= current) {
-      current = Math.max(current, interval.end);
+    if (interval.end <= cursor) continue;
+
+    if (interval.start <= cursor) {
+      cursor = Math.max(cursor, interval.end);
       continue;
     }
 
-    const workChunk = interval.start - current;
+    const workChunk = interval.start - cursor;
     if (remaining <= workChunk) {
-      return current + remaining;
+      return cursor + remaining;
     }
 
     remaining -= workChunk;
-    current = interval.end;
+    cursor = interval.end;
   }
 
-  return current + remaining;
-}
-
-function setStatus(text, type) {
-  elements.statusBox.className = `notice ${type}`;
-  elements.statusBox.textContent = text;
+  return cursor + remaining;
 }
 
 function syncFormFromState() {
@@ -220,14 +229,10 @@ function syncFormFromState() {
 
 function renderPauseRows() {
   const { invalid } = getPauseAnalysis();
-  const invalidMap = new Map(invalid.map((item) => [item.index, item.reason]));
+  const invalidIndexes = new Set(invalid.map((item) => item.index));
   elements.pauseList.innerHTML = '';
 
-  if (!state.pauses.length) {
-    elements.pauseHint.classList.remove('hidden');
-  } else {
-    elements.pauseHint.classList.add('hidden');
-  }
+  elements.pauseHint.classList.toggle('hidden', state.pauses.length > 0);
 
   state.pauses.forEach((pause, index) => {
     const node = elements.pauseRowTemplate.content.cloneNode(true);
@@ -235,13 +240,16 @@ function renderPauseRows() {
     const from = node.querySelector('.pause-from');
     const to = node.querySelector('.pause-to');
     const remove = node.querySelector('.pause-remove');
+
     row.dataset.id = pause.id;
     from.value = pause.from;
     to.value = pause.to;
     remove.dataset.id = pause.id;
-    if (invalidMap.has(index)) {
-      row.style.borderColor = 'rgba(255,107,107,0.25)';
+
+    if (invalidIndexes.has(index)) {
+      row.style.borderColor = 'rgba(189, 78, 78, 0.34)';
     }
+
     elements.pauseList.appendChild(node);
   });
 
@@ -254,133 +262,187 @@ function renderPauseRows() {
   }
 }
 
+function setStatus(text, variant) {
+  elements.statusLine.textContent = text;
+  elements.statusLine.className = 'status-line';
+  if (variant) {
+    elements.statusLine.classList.add(variant);
+  }
+}
+
+function setDeltaState(deltaMinutes) {
+  elements.deltaCard.classList.remove('is-danger', 'is-success');
+
+  if (deltaMinutes < 0) {
+    elements.deltaLabel.textContent = 'Noch fehlend';
+    elements.deltaNote.textContent = 'bis zur Sollzeit';
+    elements.liveDelta.textContent = formatDuration(Math.abs(deltaMinutes));
+    elements.deltaCard.classList.add('is-danger');
+    return;
+  }
+
+  if (deltaMinutes > 0) {
+    elements.deltaLabel.textContent = 'Schon drüber';
+    elements.deltaNote.textContent = 'über deiner Sollzeit';
+    elements.liveDelta.textContent = formatDuration(deltaMinutes, true);
+    elements.deltaCard.classList.add('is-success');
+    return;
+  }
+
+  elements.deltaLabel.textContent = 'Genau passend';
+  elements.deltaNote.textContent = 'du liegst exakt auf Soll';
+  elements.liveDelta.textContent = '0:00 h';
+  elements.deltaCard.classList.add('is-success');
+}
+
 function renderAll() {
   const config = getConfig();
-  const start = parseTimeToMinutes(state.startTime);
-  const target = parseTimeToMinutes(state.targetTime);
+  const startMinutes = parseTimeToMinutes(state.startTime);
+  const targetMinutes = parseTimeToMinutes(state.targetTime);
   const now = new Date();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
-  const leaveTime = calculateLeaveTime(start, config);
+  const leaveTime = calculateLeaveTime(startMinutes, config);
 
-  elements.modeBadge.textContent = `${config.label} · ${formatDuration(config.targetMinutes)}`;
-  elements.fixedBreakInfo.textContent = `Feste Pause: ${config.fixedBreakLabel}`;
+  elements.modePill.textContent = `${config.modeLabel} · ${formatDuration(config.targetMinutes)}`;
+  elements.fixedBreakChip.textContent = `Feste Pause: ${config.fixedBreakLabel}`;
+  elements.toggleCopy.textContent = state.fridayMode
+    ? '5:00 h Sollzeit, feste Pause 12:00 bis 12:15.'
+    : '8:15 h Sollzeit, feste Pause 12:00 bis 12:30.';
+
   elements.heroClock.textContent = formatClockWithSeconds(now);
   elements.liveBadge.textContent = formatClockWithSeconds(now);
   elements.heroLeave.textContent = formatClock(leaveTime);
 
-  if (start === null) {
+  if (startMinutes === null) {
     elements.heroRemaining.textContent = '--:-- h';
     elements.liveWorked.textContent = '--:-- h';
-    elements.liveMissing.textContent = '--:-- h';
-    elements.liveOvertime.textContent = '+0:00 h';
-    elements.liveUntilLeave.textContent = '--:-- h';
     elements.targetProductive.textContent = '--:-- h';
-    elements.targetBreaks.textContent = '--:-- h';
-    elements.targetDiff.textContent = '--:-- h';
-    setStatus('Bitte eine gültige Einstempelzeit eingeben.', 'notice-error');
+    elements.targetPresence.textContent = 'Anwesenheit --:-- h';
+    elements.totalBreaks.textContent = '--:-- h';
+    elements.breakSplit.textContent = 'fix --:-- h · extra --:-- h';
+    setDeltaState(-config.targetMinutes);
+    setStatus('Bitte eine gültige Einstempelzeit eingeben.', 'is-warning');
+    elements.detailText.textContent = 'Trage links deine Zeiten ein. Der Rechner berücksichtigt feste und eigene Pausen ohne Doppelabzug.';
     return;
   }
 
-  const live = calculateProductive(start, Math.max(start, nowMinutes), config);
-  const missingLive = Math.max(0, config.targetMinutes - live.productive);
-  const overtimeLive = Math.max(0, live.productive - config.targetMinutes);
+  const liveEnd = Math.max(startMinutes, nowMinutes);
+  const live = calculateProductive(startMinutes, liveEnd, config);
+  const liveDelta = live.productive - config.targetMinutes;
   const leaveRemaining = leaveTime - nowMinutes;
 
+  elements.heroRemaining.textContent = leaveRemaining >= 0
+    ? formatDuration(leaveRemaining)
+    : formatDuration(Math.abs(leaveRemaining), true);
+
   elements.liveWorked.textContent = formatDuration(live.productive);
-  elements.liveMissing.textContent = formatDuration(missingLive);
-  elements.liveOvertime.textContent = formatDuration(overtimeLive, true);
-  elements.liveUntilLeave.textContent = leaveRemaining > 0 ? formatDuration(leaveRemaining) : formatDuration(Math.abs(leaveRemaining), true);
-  elements.heroRemaining.textContent = leaveRemaining > 0 ? formatDuration(leaveRemaining) : formatDuration(Math.abs(leaveRemaining), true);
+  setDeltaState(liveDelta);
 
-  if (target !== null && target > start) {
-    const result = calculateProductive(start, target, config);
-    const diff = result.productive - config.targetMinutes;
-    elements.targetProductive.textContent = formatDuration(result.productive);
-    elements.targetBreaks.textContent = formatDuration(result.totalBreak);
-    elements.targetDiff.textContent = formatDuration(diff, true);
+  if (targetMinutes !== null && targetMinutes > startMinutes) {
+    const target = calculateProductive(startMinutes, targetMinutes, config);
+    const targetDiff = target.productive - config.targetMinutes;
+    elements.targetProductive.textContent = formatDuration(target.productive);
+    elements.targetPresence.textContent = `Anwesenheit ${formatDuration(target.presence)}`;
+    elements.totalBreaks.textContent = formatDuration(target.totalBreak);
+    elements.breakSplit.textContent = `fix ${formatDuration(target.fixedBreak)} · extra ${formatDuration(target.customBreak)}`;
 
-    if (diff > 0) {
-      setStatus(`Bis ${formatClock(target)} bist du ${formatDuration(diff)} über der Sollzeit.`, 'notice-warning');
-    } else if (diff < 0) {
-      setStatus(`Bis ${formatClock(target)} fehlen noch ${formatDuration(Math.abs(diff))} bis zur Sollzeit.`, 'notice-error');
+    if (targetDiff > 0) {
+      setStatus(`Bis ${formatClock(targetMinutes)} bist du ${formatDuration(targetDiff)} über der Sollzeit.`, 'is-success');
+    } else if (targetDiff < 0) {
+      setStatus(`Bis ${formatClock(targetMinutes)} fehlen noch ${formatDuration(Math.abs(targetDiff))} bis zur Sollzeit.`, 'is-warning');
     } else {
-      setStatus(`Bis ${formatClock(target)} landest du genau auf deiner Sollzeit.`, 'notice-info');
+      setStatus(`Bis ${formatClock(targetMinutes)} landest du genau auf deiner Sollzeit.`, 'is-info');
     }
 
-    elements.detailText.textContent = `Von ${formatClock(start)} bis ${formatClock(target)} sind es ${formatDuration(result.presence)} Anwesenheit. Nach Abzug von ${formatDuration(result.fixedBreak)} fixer Pause und ${formatDuration(result.customBreak)} zusätzlichen Pausen bleiben ${formatDuration(result.productive)} Arbeitszeit.`;
+    elements.detailText.textContent = `Von ${formatClock(startMinutes)} bis ${formatClock(targetMinutes)} sind es ${formatDuration(target.presence)} Anwesenheit. Nach Abzug von ${formatDuration(target.fixedBreak)} fixer Pause und ${formatDuration(target.customBreak)} zusätzlichen Pausen bleiben ${formatDuration(target.productive)} Arbeitszeit.`;
   } else {
     elements.targetProductive.textContent = '--:-- h';
-    elements.targetBreaks.textContent = formatDuration(live.totalBreak);
-    elements.targetDiff.textContent = formatDuration(live.productive - config.targetMinutes, true);
+    elements.targetPresence.textContent = 'Solluhrzeit optional';
+    elements.totalBreaks.textContent = formatDuration(live.totalBreak);
+    elements.breakSplit.textContent = `fix ${formatDuration(live.fixedBreak)} · extra ${formatDuration(live.customBreak)}`;
 
     if (leaveRemaining > 0) {
-      setStatus(`Bis zum Feierabend um ${formatClock(leaveTime)} fehlen noch ${formatDuration(leaveRemaining)}.`, 'notice-info');
+      setStatus(`Bis zum Feierabend um ${formatClock(leaveTime)} fehlen noch ${formatDuration(leaveRemaining)}.`, 'is-info');
     } else {
-      setStatus(`Der berechnete Feierabend um ${formatClock(leaveTime)} ist bereits überschritten.`, 'notice-warning');
+      setStatus(`Der berechnete Feierabend um ${formatClock(leaveTime)} ist bereits überschritten.`, 'is-success');
     }
 
-    elements.detailText.textContent = `Aktuell sind ${formatDuration(live.productive)} effektive Arbeitszeit erreicht. Bisher wurden ${formatDuration(live.fixedBreak)} feste Pause und ${formatDuration(live.customBreak)} zusätzliche Pausen abgezogen.`;
+    elements.detailText.textContent = `Seit ${formatClock(startMinutes)} wurden ${formatDuration(live.fixedBreak)} feste Pause und ${formatDuration(live.customBreak)} zusätzliche Pausen abgezogen. Aktuell stehen ${formatDuration(live.productive)} effektive Arbeitszeit auf dem Konto.`;
   }
-
-  saveState();
 }
 
-function addPause() {
-  state.pauses.push({ id: makeId(), from: '', to: '' });
+function addPause(pause = { id: cryptoRandomId(), from: '', to: '' }) {
+  state.pauses.push(pause);
+  saveState();
   renderPauseRows();
-  saveState();
+  renderAll();
 }
 
-function resetAll() {
+function resetState() {
   state = { ...defaultState, pauses: [] };
+  saveState();
   syncFormFromState();
   renderPauseRows();
   renderAll();
-  localStorage.removeItem(STORAGE_KEY);
-}
-
-function bindEvents() {
-  elements.startTime.addEventListener('input', (e) => {
-    state.startTime = e.target.value;
-    renderAll();
-  });
-
-  elements.targetTime.addEventListener('input', (e) => {
-    state.targetTime = e.target.value;
-    renderAll();
-  });
-
-  elements.fridayMode.addEventListener('change', (e) => {
-    state.fridayMode = e.target.checked;
-    renderAll();
-  });
-
-  elements.addPauseBtn.addEventListener('click', addPause);
-  elements.calcBtn.addEventListener('click', renderAll);
-  elements.resetBtn.addEventListener('click', resetAll);
-
-  elements.pauseList.addEventListener('input', (e) => {
-    const row = e.target.closest('.pause-row');
-    if (!row) return;
-    const pause = state.pauses.find((item) => item.id === row.dataset.id);
-    if (!pause) return;
-    if (e.target.classList.contains('pause-from')) pause.from = e.target.value;
-    if (e.target.classList.contains('pause-to')) pause.to = e.target.value;
-    renderPauseRows();
-    renderAll();
-  });
-
-  elements.pauseList.addEventListener('click', (e) => {
-    if (!e.target.classList.contains('pause-remove')) return;
-    const id = e.target.dataset.id;
-    state.pauses = state.pauses.filter((item) => item.id !== id);
-    renderPauseRows();
-    renderAll();
-  });
 }
 
 syncFormFromState();
 renderPauseRows();
 renderAll();
-bindEvents();
+
 setInterval(renderAll, 1000);
+
+elements.startTime.addEventListener('input', (event) => {
+  state.startTime = event.target.value;
+  saveState();
+  renderAll();
+});
+
+elements.targetTime.addEventListener('input', (event) => {
+  state.targetTime = event.target.value;
+  saveState();
+  renderAll();
+});
+
+elements.fridayMode.addEventListener('change', (event) => {
+  state.fridayMode = event.target.checked;
+  saveState();
+  renderAll();
+});
+
+elements.addPauseBtn.addEventListener('click', () => addPause());
+
+elements.calcBtn.addEventListener('click', () => {
+  saveState();
+  renderPauseRows();
+  renderAll();
+});
+
+elements.resetBtn.addEventListener('click', resetState);
+
+elements.pauseList.addEventListener('input', (event) => {
+  const row = event.target.closest('.pause-row');
+  if (!row) return;
+  const pause = state.pauses.find((item) => item.id === row.dataset.id);
+  if (!pause) return;
+
+  if (event.target.classList.contains('pause-from')) {
+    pause.from = event.target.value;
+  }
+  if (event.target.classList.contains('pause-to')) {
+    pause.to = event.target.value;
+  }
+
+  saveState();
+  renderPauseRows();
+  renderAll();
+});
+
+elements.pauseList.addEventListener('click', (event) => {
+  const button = event.target.closest('.pause-remove');
+  if (!button) return;
+  state.pauses = state.pauses.filter((pause) => pause.id !== button.dataset.id);
+  saveState();
+  renderPauseRows();
+  renderAll();
+});
