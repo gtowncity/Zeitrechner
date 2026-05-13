@@ -1,165 +1,1121 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Zeitrechner</title>
-  <meta name="description" content="Dunkler Zeitrechner mit ATOSS-Import, Live-Status und zusätzlichen Pausen.">
-  <link rel="stylesheet" href="styles.css">
+  <meta name="description" content="Kompakter Zeitrechner mit automatischem ATOSS-Handoff, Live-Stand und Zusatzpausen." />
+  <style>
+    :root {
+      --bg-1: #f5f7fb;
+      --bg-2: #edf2ff;
+      --card: rgba(255, 255, 255, 0.78);
+      --card-border: rgba(255, 255, 255, 0.72);
+      --text: #111827;
+      --muted: #667085;
+      --primary: #0a84ff;
+      --primary-2: #5ac8fa;
+      --success: #15803d;
+      --warning: #c2410c;
+      --danger: #b42318;
+      --success-soft: rgba(21, 128, 61, 0.12);
+      --warning-soft: rgba(194, 65, 12, 0.10);
+      --danger-soft: rgba(180, 35, 24, 0.10);
+      --shadow: 0 18px 42px rgba(15, 23, 42, 0.10);
+      --radius-xl: 26px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-sm: 12px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(90, 200, 250, 0.26), transparent 28%),
+        radial-gradient(circle at top right, rgba(10, 132, 255, 0.16), transparent 24%),
+        linear-gradient(180deg, var(--bg-2), var(--bg-1));
+      padding: 22px;
+    }
+
+    .page {
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+
+    .hero,
+    .card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      border-radius: 30px;
+      padding: 26px;
+      margin-bottom: 18px;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.76);
+      border: 1px solid rgba(255,255,255,0.92);
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      margin: 14px 0 10px;
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      line-height: 0.94;
+      letter-spacing: -0.05em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 58ch;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+
+    .hero-right {
+      min-width: 230px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .hero-mini {
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(255,255,255,0.88);
+    }
+
+    .hero-mini .k {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .hero-mini .v {
+      font-size: clamp(1.1rem, 2.8vw, 1.8rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 0.98fr 1.02fr;
+      gap: 18px;
+    }
+
+    .card {
+      border-radius: 24px;
+      padding: 20px;
+    }
+
+    .card h2 {
+      margin: 6px 0 14px;
+      font-size: 1.2rem;
+      letter-spacing: -0.02em;
+    }
+
+    .section-kicker {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .subtext,
+    .helper,
+    .detail,
+    .field small,
+    .pause-note {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .subtext { margin-bottom: 14px; font-size: 0.95rem; }
+    .helper, .detail, .field small, .pause-note { font-size: 0.9rem; }
+
+    .top-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 8px; }
+    .field label,
+    .label {
+      font-weight: 800;
+      color: #1f2937;
+      font-size: 0.92rem;
+    }
+
+    input[type="time"] {
+      width: 100%;
+      min-height: 48px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: rgba(255,255,255,0.92);
+      border-radius: 14px;
+      padding: 0 14px;
+      font: inherit;
+      color: var(--text);
+      outline: none;
+      transition: .18s ease;
+    }
+
+    input[type="time"]:focus {
+      border-color: rgba(10, 132, 255, 0.42);
+      box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.12);
+    }
+
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.64);
+      border: 1px solid rgba(255,255,255,0.85);
+      margin-bottom: 14px;
+    }
+
+    .toggle-copy strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.98rem;
+    }
+
+    .toggle-copy span {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .switch {
+      position: relative;
+      width: 58px;
+      height: 32px;
+      flex: 0 0 auto;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: #cfd6df;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+    .slider::before {
+      content: "";
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      left: 4px;
+      top: 4px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.14);
+      transition: .2s ease;
+    }
+    .switch input:checked + .slider {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    }
+    .switch input:checked + .slider::before {
+      transform: translateX(26px);
+    }
+
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .pill {
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(255,255,255,0.9);
+      font-size: 0.86rem;
+      font-weight: 800;
+      color: #334155;
+    }
+
+    .subhead {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin: 12px 0 10px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    .pause-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .pause-row {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) minmax(0,1fr) 52px;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.66);
+      border: 1px solid rgba(255,255,255,0.88);
+    }
+
+    .pause-row.invalid {
+      background: rgba(180, 35, 24, 0.06);
+      border-color: rgba(180, 35, 24, 0.18);
+    }
+
+    .pause-row-note {
+      grid-column: 1 / -1;
+      min-height: 1.2rem;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .empty-state {
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px dashed rgba(15,23,42,0.14);
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 13px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .16s ease, box-shadow .16s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+
+    .btn-primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 12px 22px rgba(10, 132, 255, 0.18);
+    }
+
+    .btn-secondary {
+      color: var(--text);
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(15,23,42,0.08);
+    }
+
+    .btn-icon {
+      width: 52px;
+      padding: 0;
+      font-size: 1.3rem;
+      color: var(--danger);
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(15,23,42,0.08);
+    }
+
+    .feedback {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .feedback.show { display: block; }
+    .feedback.success { background: var(--success-soft); color: var(--success); border: 1px solid rgba(21, 128, 61, 0.18); }
+    .feedback.warning { background: var(--warning-soft); color: var(--warning); border: 1px solid rgba(194, 65, 12, 0.18); }
+    .feedback.danger { background: var(--danger-soft); color: var(--danger); border: 1px solid rgba(180, 35, 24, 0.18); }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .result-card {
+      background: rgba(255,255,255,0.70);
+      border: 1px solid rgba(255,255,255,0.86);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .result-card.primary {
+      grid-column: 1 / -1;
+      background: linear-gradient(180deg, rgba(90,200,250,0.10), rgba(255,255,255,0.78));
+    }
+
+    .result-label {
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .result-value {
+      font-size: clamp(1.2rem, 3vw, 2rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+    }
+
+    .result-note {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .status {
+      margin-top: 12px;
+      border-radius: 18px;
+      padding: 14px 16px;
+      font-weight: 800;
+      line-height: 1.5;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(255,255,255,0.82);
+    }
+    .status.success { color: var(--success); background: var(--success-soft); border-color: rgba(21,128,61,0.18); }
+    .status.warning { color: var(--warning); background: var(--warning-soft); border-color: rgba(194,65,12,0.18); }
+    .status.danger { color: var(--danger); background: var(--danger-soft); border-color: rgba(180,35,24,0.18); }
+
+    .meta-line {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 940px) {
+      .layout { grid-template-columns: 1fr; }
+      .hero-top { flex-direction: column; }
+      .hero-right { grid-template-columns: 1fr; width: 100%; }
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 14px; }
+      .hero, .card { padding: 16px; border-radius: 22px; }
+      .top-row, .result-grid, .pause-row { grid-template-columns: 1fr; }
+      .buttons { flex-direction: column; }
+      button, .btn-icon { width: 100%; }
+    }
+  </style>
 </head>
 <body>
   <main class="page">
-    <header class="hero">
-      <div class="hero-copy">
-        <div class="eyebrow">Zeitrechner</div>
-        <h1>Zeitrechner</h1>
-        <p>Arbeitszeit sauber berechnen. Startzeit eingeben, Pausen pflegen, Feierabend und Live-Stand direkt sehen.</p>
-      </div>
-      <div class="status-pill">Bereit</div>
-    </header>
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <div class="eyebrow">Zeitrechner · automatisch mit ATOSS</div>
+          <h1>Zeitrechner</h1>
+          <p>Sauberer Arbeitszeitrechner mit Zusatzpausen, Live-Stand und automatischer Übernahme aus ATOSS per direkter Browser-Weitergabe.</p>
+        </div>
 
-    <section class="summary-bar" aria-label="Tagesübersicht">
-      <article class="summary-item">
-        <span class="label">Aktuelle Uhrzeit</span>
-        <strong id="heroClock">--:--:--</strong>
-      </article>
-      <article class="summary-item">
-        <span class="label">Feierabend</span>
-        <strong id="heroLeave">--:--</strong>
-      </article>
-      <article class="summary-item summary-accent">
-        <span class="label">Rest bis Feierabend</span>
-        <strong id="heroRemaining">--:-- h</strong>
-      </article>
+        <div class="hero-right">
+          <div class="hero-mini">
+            <div class="k">ATOSS-Status</div>
+            <div class="v" id="atossStateText">Kein Import</div>
+          </div>
+          <div class="hero-mini">
+            <div class="k">Aktuelle Uhrzeit</div>
+            <div class="v" id="heroClock">--:--:--</div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <section class="workspace">
-      <section class="panel input-panel" aria-labelledby="inputTitle">
-        <div class="panel-head">
-          <div>
-            <span class="section-tag">Eingabe</span>
-            <h2 id="inputTitle">Arbeitszeit einstellen</h2>
+    <div class="layout">
+      <section class="card">
+        <div class="section-kicker">Eingabe</div>
+        <h2>Arbeitszeit einstellen</h2>
+        <div class="subtext">Standard: 8,25 Stunden mit fester Pause 12:00 bis 12:30. Freitag: 5,00 Stunden mit fester Pause 12:00 bis 12:15.</div>
+
+        <div class="top-row">
+          <div class="field">
+            <label for="startTime">Einstempelzeit</label>
+            <input id="startTime" type="time" value="07:00" />
+            <small>Beispiel: 07:00</small>
           </div>
-          <span class="mode-pill" id="modePill">Standard · 8:15 h</span>
+
+          <div class="field">
+            <label for="targetTime">Solluhrzeit</label>
+            <input id="targetTime" type="time" value="17:00" />
+            <small>Beispiel: 17:00</small>
+          </div>
         </div>
 
-        <div class="field-grid">
-          <label class="field">
-            <span class="field-label">Einstempelzeit</span>
-            <input id="startTime" type="time" value="07:00">
-          </label>
-
-          <label class="field">
-            <span class="field-label">Solluhrzeit</span>
-            <input id="targetTime" type="time" value="17:00">
-          </label>
-        </div>
-
-        <div class="toggle-row">
-          <div>
+        <div class="toggle-wrap">
+          <div class="toggle-copy">
             <strong>Freitag aktivieren</strong>
-            <p id="toggleCopy">5:00 h Sollzeit, feste Pause 12:00 bis 12:15.</p>
+            <span id="toggleText">8:15 h Sollzeit, feste Pause 12:00 bis 12:30.</span>
           </div>
           <label class="switch" aria-label="Freitag aktivieren">
-            <input id="fridayMode" type="checkbox">
+            <input id="fridayMode" type="checkbox" />
             <span class="slider"></span>
           </label>
         </div>
 
-        <div class="chip-row">
-          <span class="info-chip" id="fixedBreakChip">Feste Pause: 12:00 bis 12:30</span>
+        <div class="pills">
+          <div class="pill" id="targetLabel">Sollzeit: 8:15 h</div>
+          <div class="pill" id="breakLabel">Pause: 12:00 - 12:30</div>
         </div>
 
-        <div class="subsection-head">
+        <div class="subhead">
           <div>
-            <span class="section-tag">Zusätzliche Pausen</span>
-            <h3>Eigene Ausstempelzeiten</h3>
+            <div class="section-kicker">Zusätzliche Pausen</div>
+            <h2 style="margin-top:6px;">Eigene Ausstempelzeiten</h2>
           </div>
-          <button class="button ghost" id="addPauseButton" type="button">Pause hinzufügen</button>
+          <button class="btn-secondary" id="addPauseBtn" type="button">Pause hinzufügen</button>
         </div>
 
-        <p class="section-copy">Beispiel: 09:12 bis 11:30. Überlappungen werden automatisch zusammengeführt und nie doppelt abgezogen.</p>
-
+        <div class="helper">Beispiel: 09:12 bis 11:30. Überlappungen werden automatisch zusammengeführt und nie doppelt abgezogen.</div>
         <div id="pauseList" class="pause-list"></div>
         <div id="pauseHint" class="empty-state">Noch keine zusätzlichen Pausen eingetragen.</div>
 
-        <div class="button-row">
-          <button class="button primary" id="calculateButton" type="button">Neu berechnen</button>
-          <button class="button secondary" id="importAtossButton" type="button">ATOSS-Import</button>
-          <button class="button secondary" id="resetButton" type="button">Zurücksetzen</button>
+        <div class="buttons">
+          <button class="btn-primary" id="calcBtn" type="button">Neu berechnen</button>
+          <button class="btn-secondary" id="resetBtn" type="button">Zurücksetzen</button>
         </div>
 
-        <div id="importFeedback" class="inline-note hidden"></div>
-        <div id="pauseValidation" class="inline-note hidden"></div>
+        <div id="importFeedback" class="feedback"></div>
+        <div id="pauseValidation" class="feedback"></div>
       </section>
 
-      <section class="panel output-panel" aria-labelledby="summaryTitle">
-        <div class="panel-head">
-          <div>
-            <span class="section-tag">Live + Ergebnis</span>
-            <h2 id="summaryTitle">Übersicht</h2>
-          </div>
-          <span id="liveBadge" class="live-clock">--:--:--</span>
-        </div>
+      <section class="card">
+        <div class="section-kicker">Ergebnis</div>
+        <h2>Übersicht</h2>
 
-        <div class="metrics-grid compact">
-          <div class="metric">
-            <span>Jetzt gearbeitet</span>
-            <strong id="liveWorked">--:-- h</strong>
+        <div class="result-grid">
+          <div class="result-card primary">
+            <div class="result-label">Feierabend</div>
+            <div class="result-value" id="leaveTimeValue">--:--</div>
+            <div class="result-note" id="leaveTimeNote">für deine Sollarbeitszeit</div>
           </div>
-          <div class="metric">
-            <span>Noch fehlend</span>
-            <strong id="liveMissing">--:-- h</strong>
-          </div>
-          <div class="metric">
-            <span>Schon drüber</span>
-            <strong id="liveOvertime">+0:00 h</strong>
-          </div>
-          <div class="metric">
-            <span>Rest bis Feierabend</span>
-            <strong id="liveUntilLeave">--:-- h</strong>
-          </div>
-        </div>
 
-        <div class="section-divider"></div>
+          <div class="result-card">
+            <div class="result-label">Rest bis Feierabend</div>
+            <div class="result-value" id="remainingNowValue">--:-- h</div>
+            <div class="result-note">live ab aktueller Uhrzeit</div>
+          </div>
 
-        <div class="metrics-grid compact second-grid">
-          <div class="metric">
-            <span>Effektive Zeit bis Solluhrzeit</span>
-            <strong id="targetProductive">--:-- h</strong>
+          <div class="result-card">
+            <div class="result-label">Schon gearbeitet</div>
+            <div class="result-value" id="workedNowValue">--:-- h</div>
+            <div class="result-note">effektive Zeit bis jetzt</div>
           </div>
-          <div class="metric">
-            <span>Gesamte Pausen</span>
-            <strong id="totalBreaks">--:-- h</strong>
+
+          <div class="result-card">
+            <div class="result-label">Effektive Zeit bis Solluhrzeit</div>
+            <div class="result-value" id="workedValue">--:-- h</div>
+            <div class="result-note" id="workedNote">Anwesenheit: --:-- h</div>
           </div>
-          <div class="metric accent-metric" id="deltaCard">
-            <span id="deltaLabel">Differenz zur Sollzeit</span>
-            <strong id="deltaValue">±0:00 h</strong>
-            <small id="deltaNote">Überschuss oder Fehlzeit</small>
+
+          <div class="result-card">
+            <div class="result-label">Gesamte Pausen</div>
+            <div class="result-value" id="pauseValue">--:-- h</div>
+            <div class="result-note" id="pauseNote">fix + zusätzliche Pausen</div>
+          </div>
+
+          <div class="result-card">
+            <div class="result-label">Differenz zur Sollzeit</div>
+            <div class="result-value" id="diffValue">±0:00 h</div>
+            <div class="result-note" id="diffNote">Überschuss oder Fehlzeit</div>
           </div>
         </div>
 
-        <div class="status-line neutral" id="statusLine">Gib deine Zeiten ein, dann erscheint hier die klare Zusammenfassung.</div>
-        <p class="detail-text" id="detailText">Von 07:00 bis 17:00 sind es 10:00 Stunden Anwesenheit. Nach Abzug der Pausen bleibt die effektive Arbeitszeit.</p>
+        <div class="status warning" id="statusBox">Noch keine Berechnung vorhanden.</div>
+        <div class="meta-line" id="detailText">Von 07:00 bis 17:00 sind es 10:00 Stunden Anwesenheit. Nach Abzug der Pausen bleibt die effektive Arbeitszeit.</div>
       </section>
-    </section>
+    </div>
   </main>
 
   <template id="pauseRowTemplate">
     <div class="pause-row">
-      <label class="field compact-field">
-        <span>Von</span>
-        <input class="pause-from" type="time">
-      </label>
-      <label class="field compact-field">
-        <span>Bis</span>
-        <input class="pause-to" type="time">
-      </label>
-      <button class="button icon danger pause-remove" type="button" aria-label="Pause löschen">×</button>
-      <div class="pause-row-note"></div>
+      <div class="field">
+        <label class="label">Von</label>
+        <input class="pause-from" type="time" />
+      </div>
+      <div class="field">
+        <label class="label">Bis</label>
+        <input class="pause-to" type="time" />
+      </div>
+      <button class="btn-icon pause-remove" type="button" aria-label="Pause löschen">×</button>
+      <div class="pause-row-note pause-note"></div>
     </div>
   </template>
 
-  <script src="app.js"></script>
+  <script>
+    const STORAGE_KEY = 'zeitrechner_auto_atoss_v1';
+
+    const els = {
+      startTime: document.getElementById('startTime'),
+      targetTime: document.getElementById('targetTime'),
+      fridayMode: document.getElementById('fridayMode'),
+      addPauseBtn: document.getElementById('addPauseBtn'),
+      calcBtn: document.getElementById('calcBtn'),
+      resetBtn: document.getElementById('resetBtn'),
+      pauseList: document.getElementById('pauseList'),
+      pauseHint: document.getElementById('pauseHint'),
+      pauseValidation: document.getElementById('pauseValidation'),
+      pauseRowTemplate: document.getElementById('pauseRowTemplate'),
+      targetLabel: document.getElementById('targetLabel'),
+      breakLabel: document.getElementById('breakLabel'),
+      toggleText: document.getElementById('toggleText'),
+      leaveTimeValue: document.getElementById('leaveTimeValue'),
+      leaveTimeNote: document.getElementById('leaveTimeNote'),
+      remainingNowValue: document.getElementById('remainingNowValue'),
+      workedNowValue: document.getElementById('workedNowValue'),
+      workedValue: document.getElementById('workedValue'),
+      workedNote: document.getElementById('workedNote'),
+      pauseValue: document.getElementById('pauseValue'),
+      pauseNote: document.getElementById('pauseNote'),
+      diffValue: document.getElementById('diffValue'),
+      diffNote: document.getElementById('diffNote'),
+      statusBox: document.getElementById('statusBox'),
+      detailText: document.getElementById('detailText'),
+      heroClock: document.getElementById('heroClock'),
+      atossStateText: document.getElementById('atossStateText'),
+      importFeedback: document.getElementById('importFeedback')
+    };
+
+    const defaultState = {
+      startTime: '07:00',
+      targetTime: '17:00',
+      fridayMode: false,
+      pauses: [],
+      atossMeta: null
+    };
+
+    let state = loadState();
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return structuredClone(defaultState);
+        const parsed = JSON.parse(raw);
+        return {
+          startTime: typeof parsed.startTime === 'string' ? parsed.startTime : defaultState.startTime,
+          targetTime: typeof parsed.targetTime === 'string' ? parsed.targetTime : defaultState.targetTime,
+          fridayMode: Boolean(parsed.fridayMode),
+          pauses: Array.isArray(parsed.pauses)
+            ? parsed.pauses.map((p) => ({
+                id: p.id || makeId(),
+                from: typeof p.from === 'string' ? p.from : '',
+                to: typeof p.to === 'string' ? p.to : ''
+              }))
+            : [],
+          atossMeta: parsed.atossMeta || null
+        };
+      } catch {
+        return structuredClone(defaultState);
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function makeId() {
+      return `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function getConfig(isFriday = state.fridayMode) {
+      return isFriday
+        ? {
+            name: 'Freitag',
+            targetMinutes: 300,
+            breakStart: 720,
+            breakEnd: 735,
+            breakText: '12:00 - 12:15'
+          }
+        : {
+            name: 'Standard',
+            targetMinutes: 495,
+            breakStart: 720,
+            breakEnd: 750,
+            breakText: '12:00 - 12:30'
+          };
+    }
+
+    function parseTimeToMinutes(value) {
+      if (!value || !value.includes(':')) return null;
+      const [h, m] = value.split(':').map(Number);
+      if (Number.isNaN(h) || Number.isNaN(m)) return null;
+      return h * 60 + m;
+    }
+
+    function formatClock(totalMinutes) {
+      if (totalMinutes === null || totalMinutes === undefined || Number.isNaN(totalMinutes)) return '--:--';
+      const normalized = ((Math.round(totalMinutes) % 1440) + 1440) % 1440;
+      const h = Math.floor(normalized / 60);
+      const m = normalized % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+
+    function formatClockWithSeconds(date) {
+      return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+    }
+
+    function formatDuration(minutes, withSign = false) {
+      if (minutes === null || minutes === undefined || Number.isNaN(minutes)) return '--:-- h';
+      const sign = minutes < 0 ? '-' : (withSign && minutes > 0 ? '+' : '');
+      const absolute = Math.abs(Math.round(minutes));
+      const h = Math.floor(absolute / 60);
+      const m = absolute % 60;
+      return `${sign}${h}:${String(m).padStart(2, '0')} h`;
+    }
+
+    function mergeIntervals(intervals) {
+      if (!intervals.length) return [];
+      const sorted = [...intervals].sort((a, b) => a.start - b.start || a.end - b.end);
+      const merged = [{ ...sorted[0] }];
+      for (const interval of sorted.slice(1)) {
+        const last = merged[merged.length - 1];
+        if (interval.start <= last.end) {
+          last.end = Math.max(last.end, interval.end);
+        } else {
+          merged.push({ ...interval });
+        }
+      }
+      return merged;
+    }
+
+    function overlapMinutes(interval, rangeStart, rangeEnd) {
+      return Math.max(0, Math.min(interval.end, rangeEnd) - Math.max(interval.start, rangeStart));
+    }
+
+    function sumOverlap(intervals, rangeStart, rangeEnd) {
+      return intervals.reduce((sum, interval) => sum + overlapMinutes(interval, rangeStart, rangeEnd), 0);
+    }
+
+    function getPauseAnalysis() {
+      const validCustom = [];
+      const invalidPauses = [];
+
+      state.pauses.forEach((pause, index) => {
+        const from = parseTimeToMinutes(pause.from);
+        const to = parseTimeToMinutes(pause.to);
+
+        if (!pause.from && !pause.to) {
+          invalidPauses.push({ index, reason: 'Bitte Start und Ende der Pause eintragen.' });
+          return;
+        }
+        if (from === null || to === null) {
+          invalidPauses.push({ index, reason: 'Zeitformat unvollständig.' });
+          return;
+        }
+        if (to <= from) {
+          invalidPauses.push({ index, reason: 'Pause muss nach der Startzeit enden.' });
+          return;
+        }
+
+        validCustom.push({ start: from, end: to, index });
+      });
+
+      return { validCustom, invalidPauses };
+    }
+
+    function getAllBreakIntervals(config) {
+      const { validCustom, invalidPauses } = getPauseAnalysis();
+      const fixed = [{ start: config.breakStart, end: config.breakEnd }];
+      const mergedAll = mergeIntervals([...fixed, ...validCustom]);
+      return { validCustom, invalidPauses, fixed, mergedAll };
+    }
+
+    function calculateProductive(rangeStart, rangeEnd, config) {
+      if (rangeStart === null || rangeEnd === null || rangeEnd <= rangeStart) {
+        return {
+          presence: 0,
+          productive: 0,
+          fixedBreakMinutes: 0,
+          customBreakMinutes: 0,
+          totalBreakMinutes: 0,
+          invalidPauses: getPauseAnalysis().invalidPauses
+        };
+      }
+
+      const { invalidPauses, fixed, mergedAll } = getAllBreakIntervals(config);
+      const presence = rangeEnd - rangeStart;
+      const fixedBreakMinutes = sumOverlap(fixed, rangeStart, rangeEnd);
+      const totalBreakMinutes = sumOverlap(mergedAll, rangeStart, rangeEnd);
+      const customBreakMinutes = Math.max(0, totalBreakMinutes - fixedBreakMinutes);
+      const productive = Math.max(0, presence - totalBreakMinutes);
+
+      return {
+        presence,
+        productive,
+        fixedBreakMinutes,
+        customBreakMinutes,
+        totalBreakMinutes,
+        invalidPauses
+      };
+    }
+
+    function calculateLeaveTime(startMinutes, config) {
+      if (startMinutes === null) return null;
+      const { mergedAll } = getAllBreakIntervals(config);
+      const relevantBreaks = mergedAll.filter((interval) => interval.end > startMinutes);
+
+      let current = startMinutes;
+      let remaining = config.targetMinutes;
+
+      for (const interval of relevantBreaks) {
+        if (interval.end <= current) continue;
+
+        if (interval.start <= current) {
+          current = Math.max(current, interval.end);
+          continue;
+        }
+
+        const workChunk = interval.start - current;
+        if (remaining <= workChunk) {
+          return current + remaining;
+        }
+
+        remaining -= workChunk;
+        current = interval.end;
+      }
+
+      return current + remaining;
+    }
+
+    function showFeedback(message, tone) {
+      els.importFeedback.textContent = message;
+      els.importFeedback.className = `feedback show ${tone}`;
+    }
+
+    function clearFeedback() {
+      els.importFeedback.textContent = '';
+      els.importFeedback.className = 'feedback';
+    }
+
+    function setStatus(message, tone) {
+      els.statusBox.className = `status ${tone}`;
+      els.statusBox.textContent = message;
+    }
+
+    function updateLabels() {
+      const config = getConfig();
+      els.targetLabel.textContent = `Sollzeit: ${formatDuration(config.targetMinutes).replace(' h', '')} h`;
+      els.breakLabel.textContent = `Pause: ${config.breakText}`;
+      els.toggleText.textContent = state.fridayMode
+        ? '5:00 h Sollzeit, feste Pause 12:00 bis 12:15.'
+        : '8:15 h Sollzeit, feste Pause 12:00 bis 12:30.';
+    }
+
+    function syncFormFromState() {
+      els.startTime.value = state.startTime;
+      els.targetTime.value = state.targetTime;
+      els.fridayMode.checked = state.fridayMode;
+    }
+
+    function renderPauseRows() {
+      const { invalidPauses } = getPauseAnalysis();
+      const invalidMap = new Map(invalidPauses.map((item) => [item.index, item.reason]));
+      els.pauseList.innerHTML = '';
+      els.pauseHint.style.display = state.pauses.length ? 'none' : 'block';
+
+      state.pauses.forEach((pause, index) => {
+        const fragment = els.pauseRowTemplate.content.cloneNode(true);
+        const row = fragment.querySelector('.pause-row');
+        const fromInput = fragment.querySelector('.pause-from');
+        const toInput = fragment.querySelector('.pause-to');
+        const removeButton = fragment.querySelector('.pause-remove');
+        const note = fragment.querySelector('.pause-row-note');
+
+        row.dataset.id = pause.id;
+        fromInput.value = pause.from || '';
+        toInput.value = pause.to || '';
+        removeButton.dataset.id = pause.id;
+
+        if (invalidMap.has(index)) {
+          row.classList.add('invalid');
+          note.textContent = invalidMap.get(index);
+        } else if (pause.from && pause.to) {
+          note.textContent = `Pause wird von ${pause.from} bis ${pause.to} abgezogen.`;
+        } else {
+          note.textContent = 'Start und Ende eintragen oder die Pause löschen.';
+        }
+
+        els.pauseList.appendChild(fragment);
+      });
+
+      if (invalidPauses.length) {
+        els.pauseValidation.textContent = `${invalidPauses.length} ungültige Pause${invalidPauses.length > 1 ? 'n werden' : ' wird'} ignoriert.`;
+        els.pauseValidation.className = 'feedback show warning';
+      } else {
+        els.pauseValidation.textContent = '';
+        els.pauseValidation.className = 'feedback';
+      }
+    }
+
+    function parseAtossDate(dateString) {
+      const match = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(dateString || '');
+      if (!match) return null;
+      const [, dd, mm, yyyy] = match;
+      return new Date(`${yyyy}-${mm}-${dd}T12:00:00`);
+    }
+
+    function decodeHashPayload(hashValue) {
+      const prefix = '#atoss=';
+      if (!hashValue.startsWith(prefix)) return null;
+      const encoded = hashValue.slice(prefix.length);
+      if (!encoded) return null;
+      const jsonText = decodeURIComponent(escape(atob(decodeURIComponent(encoded))));
+      return JSON.parse(jsonText);
+    }
+
+    function importAtossPayload(payload) {
+      if (!payload || typeof payload !== 'object') throw new Error('Kein gültiges ATOSS-Paket gefunden.');
+      if (typeof payload.startTime !== 'string' || parseTimeToMinutes(payload.startTime) === null) {
+        throw new Error('ATOSS-Startzeit fehlt oder ist ungültig.');
+      }
+
+      const importedPauses = Array.isArray(payload.breaks) ? payload.breaks : [];
+      const currentState = payload.currentState === 'Pause' ? 'Pause' : 'Anwesenheit';
+
+      state.startTime = payload.startTime;
+      state.pauses = importedPauses.map((pause) => {
+        const from = typeof pause?.from === 'string' ? pause.from : '';
+        let to = typeof pause?.to === 'string' ? pause.to : '';
+
+        if (parseTimeToMinutes(from) === null) {
+          throw new Error('Mindestens eine importierte Pause hat keine gültige Startzeit.');
+        }
+
+        if (parseTimeToMinutes(to) === null && currentState === 'Pause') {
+          const now = new Date();
+          to = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        }
+
+        return { id: makeId(), from, to };
+      });
+
+      const importedDate = parseAtossDate(payload.date);
+      if (importedDate) {
+        state.fridayMode = importedDate.getDay() === 5;
+      }
+
+      state.atossMeta = {
+        date: payload.date || null,
+        source: payload.source || 'ATOSS',
+        importedAt: new Date().toISOString()
+      };
+
+      showFeedback(`ATOSS-Daten übernommen: Start ${payload.startTime}, ${state.pauses.length} ${state.pauses.length === 1 ? 'Pause' : 'Pausen'}.`, 'success');
+      renderAll();
+    }
+
+    function readHashImport() {
+      if (!location.hash.startsWith('#atoss=')) return;
+      try {
+        const payload = decodeHashPayload(location.hash);
+        importAtossPayload(payload);
+        history.replaceState(null, '', location.pathname + location.search);
+      } catch (error) {
+        showFeedback(error?.message || 'ATOSS-Import aus URL fehlgeschlagen.', 'danger');
+      }
+    }
+
+    function render() {
+      const config = getConfig();
+      updateLabels();
+      syncFormFromState();
+      renderPauseRows();
+
+      const startMinutes = parseTimeToMinutes(els.startTime.value);
+      const targetMinutes = parseTimeToMinutes(els.targetTime.value);
+      const now = new Date();
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+      const leaveTime = calculateLeaveTime(startMinutes, config);
+
+      els.heroClock.textContent = formatClockWithSeconds(now);
+      els.leaveTimeValue.textContent = formatClock(leaveTime);
+      els.leaveTimeNote.textContent = `${config.name}: ${formatDuration(config.targetMinutes).replace(' h', '')} Arbeitszeit`;
+
+      if (state.atossMeta?.date) {
+        els.atossStateText.textContent = `Import ${state.atossMeta.date}`;
+      } else {
+        els.atossStateText.textContent = 'Kein Import';
+      }
+
+      if (startMinutes === null) {
+        els.remainingNowValue.textContent = '--:-- h';
+        els.workedNowValue.textContent = '--:-- h';
+        els.workedValue.textContent = '--:-- h';
+        els.pauseValue.textContent = '--:-- h';
+        els.diffValue.textContent = '±0:00 h';
+        els.detailText.textContent = 'Bitte gib zuerst eine gültige Einstempelzeit ein.';
+        setStatus('Bitte gib eine gültige Einstempelzeit ein.', 'danger');
+        saveState();
+        return;
+      }
+
+      const liveNow = calculateProductive(startMinutes, Math.max(nowMinutes, startMinutes), config);
+      const remainingToLeave = leaveTime - nowMinutes;
+      els.remainingNowValue.textContent = formatDuration(Math.abs(remainingToLeave), remainingToLeave < 0);
+      els.workedNowValue.textContent = formatDuration(liveNow.productive);
+
+      if (targetMinutes === null || targetMinutes <= startMinutes) {
+        els.workedValue.textContent = '--:-- h';
+        els.workedNote.textContent = 'Anwesenheit: --:-- h';
+        els.pauseValue.textContent = formatDuration(liveNow.totalBreakMinutes);
+        els.pauseNote.textContent = 'fix + zusätzliche Pausen bis jetzt';
+        const liveDiff = liveNow.productive - config.targetMinutes;
+        els.diffValue.textContent = formatDuration(liveDiff, true);
+        els.diffNote.textContent = 'live gegen Sollzeit';
+        setStatus(`Feierabend liegt bei ${formatClock(leaveTime)}.`, 'warning');
+        els.detailText.textContent = `Mit Start um ${formatClock(startMinutes)} und allen hinterlegten Pausen liegt dein berechneter Feierabend bei ${formatClock(leaveTime)}.`;
+        saveState();
+        return;
+      }
+
+      const worked = calculateProductive(startMinutes, targetMinutes, config);
+      const differenceMinutes = worked.productive - config.targetMinutes;
+
+      els.workedValue.textContent = formatDuration(worked.productive);
+      els.workedNote.textContent = `Anwesenheit: ${formatDuration(worked.presence)}`;
+      els.pauseValue.textContent = formatDuration(worked.totalBreakMinutes);
+      els.pauseNote.textContent = `fix ${formatDuration(worked.fixedBreakMinutes)} · extra ${formatDuration(worked.customBreakMinutes)}`;
+      els.diffValue.textContent = formatDuration(differenceMinutes, true);
+      els.diffNote.textContent = 'Überschuss oder Fehlzeit';
+
+      if (differenceMinutes > 0) {
+        setStatus(`Du bist bis zur Solluhrzeit ${formatDuration(differenceMinutes)} über deiner Sollzeit.`, 'warning');
+      } else if (differenceMinutes < 0) {
+        setStatus(`Dir fehlen bis zur Solluhrzeit noch ${formatDuration(Math.abs(differenceMinutes))} auf deine Sollzeit.`, 'danger');
+      } else {
+        setStatus('Perfekt: Bis zu dieser Solluhrzeit landest du genau auf deiner Sollzeit.', 'success');
+      }
+
+      const invalidText = worked.invalidPauses.length
+        ? ` ${worked.invalidPauses.length} ungültige Pause${worked.invalidPauses.length > 1 ? 'n wurden' : ' wurde'} ignoriert.`
+        : '';
+
+      const overText = differenceMinutes > 0
+        ? ` Das ist ein Überschuss von ${formatDuration(differenceMinutes)}.`
+        : differenceMinutes < 0
+          ? ` Es fehlen noch ${formatDuration(Math.abs(differenceMinutes))}.`
+          : ' Genau deine Sollzeit ist erreicht.';
+
+      els.detailText.textContent =
+        `Von ${formatClock(startMinutes)} bis ${formatClock(targetMinutes)} Uhr sind es ${formatDuration(worked.presence)} Anwesenheit. ` +
+        `Nach Abzug von ${formatDuration(worked.fixedBreakMinutes)} fixer Pause und ${formatDuration(worked.customBreakMinutes)} Zusatzpause bleiben ${formatDuration(worked.productive)} Arbeitszeit.${overText}${invalidText}`;
+
+      saveState();
+    }
+
+    function renderAll() {
+      render();
+    }
+
+    function resetAll() {
+      state = structuredClone(defaultState);
+      clearFeedback();
+      localStorage.removeItem(STORAGE_KEY);
+      renderAll();
+    }
+
+    function addPause() {
+      clearFeedback();
+      state.pauses.push({ id: makeId(), from: '', to: '' });
+      renderAll();
+    }
+
+    function bindEvents() {
+      els.startTime.addEventListener('input', (event) => {
+        state.startTime = event.target.value;
+        clearFeedback();
+        renderAll();
+      });
+
+      els.targetTime.addEventListener('input', (event) => {
+        state.targetTime = event.target.value;
+        clearFeedback();
+        renderAll();
+      });
+
+      els.fridayMode.addEventListener('change', (event) => {
+        state.fridayMode = event.target.checked;
+        clearFeedback();
+        renderAll();
+      });
+
+      els.addPauseBtn.addEventListener('click', addPause);
+      els.calcBtn.addEventListener('click', renderAll);
+      els.resetBtn.addEventListener('click', resetAll);
+
+      els.pauseList.addEventListener('input', (event) => {
+        const row = event.target.closest('.pause-row');
+        if (!row) return;
+        const pause = state.pauses.find((item) => item.id === row.dataset.id);
+        if (!pause) return;
+
+        if (event.target.classList.contains('pause-from')) pause.from = event.target.value;
+        if (event.target.classList.contains('pause-to')) pause.to = event.target.value;
+
+        clearFeedback();
+        renderAll();
+      });
+
+      els.pauseList.addEventListener('click', (event) => {
+        const button = event.target.closest('.pause-remove');
+        if (!button) return;
+        state.pauses = state.pauses.filter((item) => item.id !== button.dataset.id);
+        clearFeedback();
+        renderAll();
+      });
+
+      window.addEventListener('hashchange', readHashImport);
+    }
+
+    bindEvents();
+    readHashImport();
+    renderAll();
+    setInterval(renderAll, 1000);
+  </script>
 </body>
 </html>
