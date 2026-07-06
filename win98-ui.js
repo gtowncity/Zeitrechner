@@ -1,6 +1,15 @@
 (() => {
   const $ = (selector) => document.querySelector(selector);
 
+  function loadWorkspaceCss() {
+    if (document.querySelector('link[data-workspace-css]')) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'workspace.css?v=20260706-1';
+    link.dataset.workspaceCss = 'true';
+    document.head.appendChild(link);
+  }
+
   function showToolbarHint() {
     const feedback = $('#feedback');
     if (!feedback) return;
@@ -27,6 +36,7 @@
   }
 
   function init() {
+    loadWorkspaceCss();
     bindToolbar();
     syncMirrors();
     setInterval(syncMirrors, 1000);
