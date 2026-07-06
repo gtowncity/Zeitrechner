@@ -27,11 +27,12 @@ body {
 
 body {
   min-height: 100dvh;
-  padding: 0;
+  margin: 0;
+  padding: 18px;
   background: var(--face);
   color: var(--text);
   font: 12px Tahoma, Verdana, Arial, sans-serif;
-  overflow: hidden;
+  overflow: auto;
 }
 
 button,
@@ -71,13 +72,16 @@ summary {
 }
 
 .app-window {
-  width: 100%;
-  min-height: 100dvh;
-  margin: 0;
-  border: 0;
-  box-shadow: none;
-  display: grid;
-  grid-template-rows: 24px 23px 34px minmax(0, 1fr) 24px;
+  width: min(880px, calc(100vw - 36px));
+  min-height: auto;
+  margin: 0 auto;
+  border-top: 2px solid var(--white);
+  border-left: 2px solid var(--white);
+  border-right: 2px solid var(--dark-shadow);
+  border-bottom: 2px solid var(--dark-shadow);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, .35);
+  display: block;
+  background: var(--face);
 }
 
 .titlebar {
@@ -222,21 +226,18 @@ summary:active {
 .toolbar-icon.atoss { background: #a2e0a2; }
 
 .window-body {
-  min-height: 0;
-  height: 100%;
-  overflow: auto;
   padding: 8px;
   background: var(--face);
 }
 
 .program-header {
-  min-height: 58px;
+  min-height: 0;
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 8px;
   align-items: center;
   margin-bottom: 8px;
-  padding: 6px 8px;
+  padding: 7px 8px;
   background: var(--info-paper);
   border-top: 2px solid var(--dark-shadow);
   border-left: 2px solid var(--dark-shadow);
@@ -278,7 +279,7 @@ summary:active {
 }
 
 .clock-box {
-  min-width: 138px;
+  min-width: 145px;
   padding: 4px 7px;
   background: #fff;
   font-family: "Lucida Console", "Courier New", monospace;
@@ -290,9 +291,14 @@ summary:active {
 
 .window-layout {
   display: grid;
-  grid-template-columns: minmax(420px, 1fr) 340px;
+  grid-template-columns: minmax(0, 1fr) 300px;
   gap: 8px;
   align-items: start;
+}
+
+.right-pane {
+  width: 100%;
+  max-width: 320px;
 }
 
 .win98-fieldset {
@@ -486,8 +492,8 @@ select.win98-input {
 
 .result-display {
   background: #fff;
-  padding: 10px;
-  margin-bottom: 8px;
+  padding: 8px;
+  margin-bottom: 6px;
   text-align: right;
 }
 
@@ -499,7 +505,7 @@ select.win98-input {
 
 .result-display-value {
   font-family: "Lucida Console", "Courier New", monospace;
-  font-size: 44px;
+  font-size: 36px;
   line-height: 1;
   font-weight: 700;
   color: #000;
@@ -511,7 +517,7 @@ select.win98-input {
 
 .result-table {
   background: #fff;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .result-table-row,
@@ -520,8 +526,8 @@ select.win98-input {
   grid-template-columns: 1fr auto;
   gap: 8px;
   align-items: center;
-  min-height: 28px;
-  padding: 5px 7px;
+  min-height: 24px;
+  padding: 4px 6px;
   border-bottom: 1px solid var(--face);
   background: #fff;
 }
@@ -529,11 +535,11 @@ select.win98-input {
 .result-table-row strong,
 .result-table .meter strong {
   font-family: "Lucida Console", "Courier New", monospace;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .result-table-note {
-  padding: 3px 7px 6px;
+  padding: 3px 6px 5px;
   border-bottom: 1px solid var(--face);
 }
 
@@ -608,7 +614,12 @@ summary:focus {
 
 @media (max-width: 899px) {
   body {
-    overflow: hidden;
+    padding: 8px;
+    overflow: auto;
+  }
+
+  .app-window {
+    width: 100%;
   }
 
   .window-layout,
@@ -617,6 +628,10 @@ summary:focus {
   .program-header,
   .statusbar {
     grid-template-columns: 1fr;
+  }
+
+  .right-pane {
+    max-width: none;
   }
 
   .clock-box,
@@ -655,6 +670,6 @@ summary:focus {
   }
 
   .result-display-value {
-    font-size: 36px;
+    font-size: 34px;
   }
 }
