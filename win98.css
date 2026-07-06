@@ -11,8 +11,8 @@
   --focus: #000000;
   --success: #008000;
   --danger: #800000;
-  --info-paper: #FFFDEB;
-  --green-bg: #DDF4DD;
+  --info-paper: #FFFFF0;
+  --green-bg: #E8F6E8;
 }
 
 * {
@@ -28,8 +28,8 @@ body {
 body {
   min-height: 100dvh;
   margin: 0;
-  padding: 18px;
-  background: var(--face);
+  padding: 0;
+  background: #BFBFBF;
   color: var(--text);
   font: 12px Tahoma, Verdana, Arial, sans-serif;
   overflow: auto;
@@ -39,7 +39,7 @@ button,
 input,
 select,
 summary {
-  font: 12px Tahoma, Verdana, Arial, sans-serif;
+  font: 11px Tahoma, Verdana, Arial, sans-serif;
 }
 
 .raised,
@@ -72,9 +72,10 @@ summary {
 }
 
 .app-window {
-  width: min(880px, calc(100vw - 36px));
+  width: 760px;
+  max-width: calc(100vw - 24px);
   min-height: auto;
-  margin: 0 auto;
+  margin: 16px auto;
   border-top: 2px solid var(--white);
   border-left: 2px solid var(--white);
   border-right: 2px solid var(--dark-shadow);
@@ -85,27 +86,28 @@ summary {
 }
 
 .titlebar {
-  height: 24px;
+  height: 21px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 2px 3px 2px 5px;
+  gap: 6px;
+  padding: 2px 3px;
   background: linear-gradient(90deg, var(--title), var(--title-light));
   color: #fff;
+  font-size: 11px;
   font-weight: 700;
 }
 
 .titlebar-left {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   min-width: 0;
 }
 
 .titlebar-icon {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   flex: 0 0 auto;
   background: #fff;
   border: 1px solid #111;
@@ -117,10 +119,10 @@ summary {
   position: absolute;
   left: 3px;
   top: 3px;
-  width: 8px;
+  width: 7px;
   height: 2px;
   background: var(--title);
-  box-shadow: 0 4px 0 #777, 0 8px 0 #777;
+  box-shadow: 0 3px 0 #777, 0 6px 0 #777;
 }
 
 .titlebar-text {
@@ -135,15 +137,16 @@ summary {
 }
 
 .window-controls button {
-  width: 18px;
-  height: 18px;
-  min-height: 18px;
+  width: 16px;
+  height: 16px;
+  min-height: 16px;
   padding: 0;
-  line-height: 12px;
+  line-height: 10px;
   text-align: center;
   background: var(--face-light);
   color: #000;
   border-radius: 0;
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -156,13 +159,14 @@ summary {
 }
 
 .menubar {
-  height: 23px;
+  height: 20px;
   display: flex;
   align-items: center;
-  gap: 18px;
-  padding: 2px 8px;
+  gap: 16px;
+  padding: 1px 6px;
   background: var(--face);
   border-bottom: 1px solid var(--shadow);
+  font-size: 11px;
 }
 
 .menubar span::first-letter {
@@ -170,11 +174,11 @@ summary {
 }
 
 .toolbar {
-  min-height: 34px;
+  min-height: 29px;
   display: flex;
   align-items: center;
-  gap: 3px;
-  padding: 4px 5px;
+  gap: 2px;
+  padding: 3px 5px;
   background: var(--face);
   border-top: 1px solid var(--white);
   border-bottom: 1px solid var(--shadow);
@@ -183,8 +187,8 @@ summary {
 .toolbar-button,
 .win98-button,
 summary {
-  min-height: 24px;
-  padding: 2px 10px;
+  min-height: 23px;
+  padding: 2px 9px;
   background: var(--face-light);
   color: var(--text);
   border-top: 2px solid var(--white);
@@ -194,13 +198,16 @@ summary {
   border-radius: 0;
   box-shadow: none;
   cursor: pointer;
+  font-size: 11px;
 }
 
 .toolbar-button {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  height: 24px;
+  gap: 4px;
+  height: 23px;
+  min-height: 23px;
+  padding: 2px 7px;
 }
 
 .toolbar-button:active,
@@ -210,12 +217,16 @@ summary:active {
   border-left-color: var(--dark-shadow);
   border-right-color: var(--white);
   border-bottom-color: var(--white);
-  padding: 3px 9px 1px 11px;
+  padding: 3px 8px 1px 10px;
+}
+
+.toolbar-button:active {
+  padding: 3px 6px 1px 8px;
 }
 
 .toolbar-icon {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   display: inline-block;
   border: 1px solid #555;
   background: #8ec4ff;
@@ -234,10 +245,10 @@ summary:active {
   min-height: 0;
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 8px;
+  gap: 7px;
   align-items: center;
-  margin-bottom: 8px;
-  padding: 7px 8px;
+  margin-bottom: 7px;
+  padding: 7px;
   background: var(--info-paper);
   border-top: 2px solid var(--dark-shadow);
   border-left: 2px solid var(--dark-shadow);
@@ -248,7 +259,7 @@ summary:active {
 .program-header h1 {
   margin: 0 0 2px;
   color: var(--title);
-  font-size: 20px;
+  font-size: 19px;
   line-height: 1;
   letter-spacing: 0;
 }
@@ -256,15 +267,16 @@ summary:active {
 .atoss-status {
   color: #333;
   line-height: 1.2;
+  font-size: 11px;
 }
 
 .ready-line {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 9px;
   margin-top: 3px;
   color: #333;
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .ready-line span::before {
@@ -279,11 +291,11 @@ summary:active {
 }
 
 .clock-box {
-  min-width: 145px;
-  padding: 4px 7px;
+  min-width: 138px;
+  padding: 4px 6px;
   background: #fff;
   font-family: "Lucida Console", "Courier New", monospace;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 700;
   line-height: 1;
   text-align: right;
@@ -291,19 +303,19 @@ summary:active {
 
 .window-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 8px;
+  grid-template-columns: 1fr 260px;
+  gap: 7px;
   align-items: start;
 }
 
 .right-pane {
   width: 100%;
-  max-width: 320px;
+  max-width: 260px;
 }
 
 .win98-fieldset {
-  margin: 0 0 8px;
-  padding: 10px 10px 12px;
+  margin: 0 0 7px;
+  padding: 9px 8px 10px;
   background: var(--face);
   border-top: 2px solid var(--shadow);
   border-left: 2px solid var(--shadow);
@@ -312,14 +324,15 @@ summary:active {
 }
 
 .win98-fieldset legend {
-  padding: 0 5px;
+  padding: 0 4px;
+  font-size: 11px;
   font-weight: 700;
   color: #000;
 }
 
 .field-grid {
   display: grid;
-  gap: 8px;
+  gap: 7px;
 }
 
 .two-cols {
@@ -327,29 +340,31 @@ summary:active {
 }
 
 .second-line {
-  margin-top: 8px;
+  margin-top: 7px;
 }
 
 .field label,
 .group-title {
   display: block;
-  margin: 0 0 4px;
+  margin: 0 0 3px;
   color: #000;
+  font-size: 11px;
 }
 
 .win98-input {
   width: 100%;
-  height: 24px;
-  padding: 2px 4px;
+  height: 22px;
+  padding: 1px 3px;
   background: var(--field);
   color: var(--text);
   border-radius: 0;
   box-shadow: none;
   outline: 0;
+  font-size: 11px;
 }
 
 select.win98-input {
-  padding: 1px 2px;
+  padding: 0 2px;
 }
 
 .target-input {
@@ -363,10 +378,10 @@ select.win98-input {
 .result-display-sub,
 .result-table-note,
 .pause-row-note {
-  margin: 4px 0 0;
+  margin: 3px 0 0;
   color: #555;
-  font-size: 11px;
-  line-height: 1.25;
+  font-size: 10px;
+  line-height: 1.22;
 }
 
 .custom-row[hidden] {
@@ -376,10 +391,10 @@ select.win98-input {
 .check-row {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 7px;
+  gap: 6px;
   align-items: start;
-  margin-top: 9px;
-  padding: 6px;
+  margin-top: 8px;
+  padding: 5px;
   background: var(--face-light);
   border-top: 1px solid var(--white);
   border-left: 1px solid var(--white);
@@ -390,7 +405,7 @@ select.win98-input {
 .check-row input {
   width: 14px;
   height: 14px;
-  margin: 1px 0 0;
+  margin: 0;
   accent-color: var(--title);
 }
 
@@ -402,33 +417,35 @@ select.win98-input {
 .check-row small {
   margin-top: 2px;
   color: #555;
+  font-size: 10px;
 }
 
 .sub-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
+  gap: 7px;
+  margin-bottom: 5px;
+  font-size: 11px;
 }
 
 .sunken-list {
-  min-height: 34px;
-  padding: 4px;
+  min-height: 28px;
+  padding: 3px;
   background: #fff;
 }
 
 .pause-list {
   display: grid;
-  gap: 4px;
+  gap: 3px;
 }
 
 .pause-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 78px;
-  gap: 6px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 70px;
+  gap: 5px;
   align-items: end;
-  padding: 5px;
+  padding: 4px;
   background: var(--face);
   border-top: 1px solid var(--white);
   border-left: 1px solid var(--white);
@@ -442,13 +459,14 @@ select.win98-input {
 
 .pause-row-note {
   grid-column: 1 / -1;
-  min-height: 14px;
+  min-height: 12px;
 }
 
 .empty-state {
-  padding: 7px;
+  padding: 6px;
   background: #fff;
   color: #555;
+  font-size: 11px;
 }
 
 .dialog-buttons {
@@ -459,7 +477,8 @@ select.win98-input {
 }
 
 .main-buttons {
-  padding-right: 2px;
+  margin-top: 6px;
+  padding-right: 0;
 }
 
 .default-button {
@@ -468,14 +487,15 @@ select.win98-input {
 
 .feedback {
   display: none;
-  margin-top: 8px;
-  padding: 6px 8px;
+  margin-top: 7px;
+  padding: 5px 7px;
   background: #ffffe1;
-  line-height: 1.35;
+  line-height: 1.3;
   border-top: 2px solid var(--dark-shadow);
   border-left: 2px solid var(--dark-shadow);
   border-right: 2px solid var(--white);
   border-bottom: 2px solid var(--white);
+  font-size: 11px;
 }
 
 .feedback.show {
@@ -488,31 +508,36 @@ select.win98-input {
 
 .result-fieldset {
   height: auto;
+  padding: 9px 8px 8px;
 }
 
 .result-display {
   background: #fff;
-  padding: 8px;
+  padding: 7px;
   margin-bottom: 6px;
+  min-height: 88px;
   text-align: right;
 }
 
 .result-display-label {
   text-align: left;
+  font-size: 11px;
   font-weight: 700;
   margin-bottom: 2px;
 }
 
 .result-display-value {
   font-family: "Lucida Console", "Courier New", monospace;
-  font-size: 36px;
+  font-size: 34px;
   line-height: 1;
   font-weight: 700;
+  margin-top: 5px;
   color: #000;
 }
 
 .result-display-sub {
-  margin-top: 4px;
+  margin-top: 5px;
+  color: #555;
 }
 
 .result-table {
@@ -524,23 +549,25 @@ select.win98-input {
 .result-table .meter {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
-  min-height: 24px;
-  padding: 4px 6px;
+  min-height: 23px;
+  padding: 3px 6px;
   border-bottom: 1px solid var(--face);
   background: #fff;
+  font-size: 11px;
 }
 
 .result-table-row strong,
 .result-table .meter strong {
   font-family: "Lucida Console", "Courier New", monospace;
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .result-table-note {
   padding: 3px 6px 5px;
   border-bottom: 1px solid var(--face);
+  color: #555;
 }
 
 #overtimeBox.green,
@@ -558,13 +585,13 @@ select.win98-input {
 .settings-panel {
   background: #fff;
   padding: 4px;
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .settings-panel div {
   display: grid;
-  grid-template-columns: 110px 1fr;
-  gap: 6px;
+  grid-template-columns: 78px 1fr;
+  gap: 5px;
   padding: 2px 3px;
   border-bottom: 1px dotted var(--shadow);
 }
@@ -580,23 +607,25 @@ select.win98-input {
 .settings-panel strong {
   font-weight: 400;
   color: #000;
+  overflow-wrap: anywhere;
 }
 
 .statusbar {
   display: grid;
   grid-template-columns: 1fr auto auto;
   gap: 2px;
-  min-height: 24px;
+  min-height: 20px;
   padding: 2px;
   background: var(--face);
   border-top: 1px solid var(--shadow);
 }
 
 .statusbar-panel {
-  padding: 2px 6px;
+  padding: 1px 5px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 11px;
 }
 
 button:focus,
@@ -612,14 +641,17 @@ summary:focus {
   padding-right: 4px;
 }
 
-@media (max-width: 899px) {
+@media (max-width: 799px) {
   body {
-    padding: 8px;
-    overflow: auto;
+    padding: 0;
   }
 
   .app-window {
     width: 100%;
+    max-width: none;
+    margin: 0;
+    border-left: 0;
+    border-right: 0;
   }
 
   .window-layout,
@@ -670,6 +702,6 @@ summary:focus {
   }
 
   .result-display-value {
-    font-size: 34px;
+    font-size: 30px;
   }
 }
