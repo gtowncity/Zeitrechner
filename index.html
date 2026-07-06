@@ -4,157 +4,223 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Zeitrechner.exe</title>
-  <meta name="description" content="Zeitrechner.exe im Windows-98-Utility-Stil mit ATOSS-Import und stabilen Zusatzpausen.">
+  <meta name="description" content="Arbeitszeitrechner im Stil eines echten Windows-98-Utilities mit ATOSS-Import und Zusatzpausen.">
   <link rel="stylesheet" href="win98.css">
 </head>
 <body>
-  <main class="machine" role="application" aria-label="Zeitrechner.exe">
-    <div class="machine-label">Zeitrechner.exe // Local Shift Mode</div>
+  <div class="desktop-icons" aria-hidden="true">
+    <div class="desktop-icon">
+      <div class="desktop-icon-img pc"></div>
+      <div class="desktop-icon-label">Arbeitsplatz</div>
+    </div>
+    <div class="desktop-icon">
+      <div class="desktop-icon-img folder"></div>
+      <div class="desktop-icon-label">ATOSS<br>Import</div>
+    </div>
+    <div class="desktop-icon selected">
+      <div class="desktop-icon-img app"></div>
+      <div class="desktop-icon-label">Zeitrechner</div>
+    </div>
+  </div>
 
-    <section class="console-top" aria-labelledby="inputTitle">
-      <div class="crt-screen">
-        <div>
+  <main class="win98-window app-window" role="application" aria-label="Zeitrechner.exe">
+    <div class="titlebar">
+      <div class="titlebar-left">
+        <span class="titlebar-icon" aria-hidden="true"></span>
+        <span class="titlebar-text">Zeitrechner.exe</span>
+      </div>
+      <div class="window-controls" aria-hidden="true">
+        <button type="button" tabindex="-1" aria-label="Minimieren">_</button>
+        <button type="button" tabindex="-1" aria-label="Maximieren">□</button>
+        <button type="button" tabindex="-1" aria-label="Schließen">×</button>
+      </div>
+    </div>
+
+    <nav class="menubar" aria-label="Menüleiste">
+      <span>Datei</span>
+      <span>Bearbeiten</span>
+      <span>Ansicht</span>
+      <span>Hilfe</span>
+    </nav>
+
+    <div class="toolbar" aria-label="Symbolleiste">
+      <button id="toolbarCalc" class="toolbar-button" type="button"><span class="toolbar-icon calc"></span>Berechnen</button>
+      <button id="toolbarPause" class="toolbar-button" type="button"><span class="toolbar-icon pause"></span>Pause</button>
+      <button id="toolbarReset" class="toolbar-button" type="button"><span class="toolbar-icon reset"></span>Reset</button>
+      <button id="toolbarAtoss" class="toolbar-button" type="button"><span class="toolbar-icon atoss"></span>ATOSS</button>
+    </div>
+
+    <div class="window-body">
+      <section class="program-header" aria-labelledby="inputTitle">
+        <div class="program-header-main">
           <h1 id="inputTitle">ZEITRECHNER</h1>
           <div class="atoss-status" id="atossStatus">ATOSS: kein Import</div>
-          <div class="led-row" aria-label="Status"><span>LIVE</span><span>BEREIT</span><span>LOKAL</span></div>
-          <div class="clock" id="currentClock">--:--:--</div>
+          <div class="ready-line"><span>LIVE</span><span>BEREIT</span><span>LOKAL</span></div>
         </div>
-      </div>
-    </section>
+        <div class="clock-box" id="currentClock">--:--:--</div>
+      </section>
 
-    <section class="deck module" aria-label="Eingabe">
-      <div class="module-head"><strong>Eingabe</strong><span>Eigenschaften</span></div>
-
-      <div class="slot-board">
-        <div class="grid-2">
-          <div class="field">
-            <label for="startTime">Einstempelzeit</label>
-            <input id="startTime" type="time" value="07:00">
-          </div>
-          <div class="field">
-            <label for="targetTime">Solluhrzeit</label>
-            <input id="targetTime" class="target-input" type="time" value="17:00">
-            <div class="hint">Grün = selbst gesetzter Feierabend.</div>
-          </div>
-        </div>
-
-        <div class="switch-line">
-          <label class="switch"><input id="fridayMode" type="checkbox" aria-label="Freitag aktivieren"></label>
-          <div><strong>Freitag aktivieren</strong><small id="fridayHint">Aus: Standard 8:15 h und Pause 12:00 bis 12:30.</small></div>
-        </div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label for="workPreset">Sollzeit</label>
-            <select id="workPreset">
-              <option value="standard">Standard 8:15 h</option>
-              <option value="friday">Freitag 5:00 h</option>
-              <option value="eight">8:00 h</option>
-              <option value="seven45">7:45 h</option>
-              <option value="custom">Benutzerdefiniert</option>
-            </select>
-          </div>
-          <div id="customWorkRow" class="field custom-row" hidden>
-            <label for="customWorkTime">Sollzeit hh:mm</label>
-            <input id="customWorkTime" type="time" value="08:15">
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label for="breakPreset">Reguläre Pause</label>
-            <select id="breakPreset">
-              <option value="standard">12:00 - 12:30</option>
-              <option value="short">12:00 - 12:15</option>
-              <option value="none">Keine feste Pause</option>
-              <option value="custom">Benutzerdefiniert</option>
-            </select>
-          </div>
-          <div id="customBreakRow" class="grid-2 custom-row" hidden>
-            <div class="field">
-              <label for="customBreakFrom">Pause von</label>
-              <input id="customBreakFrom" type="time" value="12:00">
+      <div class="content-grid">
+        <div class="left-pane">
+          <fieldset class="win98-fieldset">
+            <legend>Arbeitszeit</legend>
+            <div class="field-grid two-cols">
+              <div class="field">
+                <label for="startTime">Einstempelzeit</label>
+                <input id="startTime" class="win98-input" type="time" value="07:00">
+              </div>
+              <div class="field">
+                <label for="targetTime">Solluhrzeit</label>
+                <input id="targetTime" class="win98-input target-input" type="time" value="17:00">
+                <p class="help-text">Grün = selbst gesetzter Feierabend.</p>
+              </div>
             </div>
-            <div class="field">
-              <label for="customBreakTo">Pause bis</label>
-              <input id="customBreakTo" type="time" value="12:30">
+
+            <label class="check-row" for="fridayMode">
+              <input id="fridayMode" type="checkbox" aria-label="Freitag aktivieren">
+              <span>
+                <strong>Freitag aktivieren</strong>
+                <small id="fridayHint">Aus: Standard 8:15 h und Pause 12:00 bis 12:30.</small>
+              </span>
+            </label>
+          </fieldset>
+
+          <fieldset class="win98-fieldset">
+            <legend>Soll & Pause</legend>
+            <div class="field-grid two-cols">
+              <div class="field">
+                <label for="workPreset">Sollzeit</label>
+                <select id="workPreset" class="win98-input">
+                  <option value="standard">Standard 8:15 h</option>
+                  <option value="friday">Freitag 5:00 h</option>
+                  <option value="eight">8:00 h</option>
+                  <option value="seven45">7:45 h</option>
+                  <option value="custom">Benutzerdefiniert</option>
+                </select>
+              </div>
+              <div id="customWorkRow" class="field custom-row" hidden>
+                <label for="customWorkTime">Sollzeit hh:mm</label>
+                <input id="customWorkTime" class="win98-input" type="time" value="08:15">
+              </div>
             </div>
-          </div>
+
+            <div class="field-grid two-cols second-line">
+              <div class="field">
+                <label for="breakPreset">Reguläre Pause</label>
+                <select id="breakPreset" class="win98-input">
+                  <option value="standard">12:00 - 12:30</option>
+                  <option value="short">12:00 - 12:15</option>
+                  <option value="none">Keine feste Pause</option>
+                  <option value="custom">Benutzerdefiniert</option>
+                </select>
+              </div>
+              <div id="customBreakRow" class="field-grid two-cols custom-row" hidden>
+                <div class="field">
+                  <label for="customBreakFrom">Pause von</label>
+                  <input id="customBreakFrom" class="win98-input" type="time" value="12:00">
+                </div>
+                <div class="field">
+                  <label for="customBreakTo">Pause bis</label>
+                  <input id="customBreakTo" class="win98-input" type="time" value="12:30">
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="win98-fieldset">
+            <legend>Zusatzpausen</legend>
+            <div class="sub-toolbar">
+              <span>Zusätzliche Ausstempelzeiten</span>
+              <button id="addPauseButton" class="win98-button" type="button">Hinzufügen</button>
+            </div>
+            <div id="pauseList" class="pause-list sunken-list"></div>
+            <div id="pauseHint" class="empty-state sunken">Keine zusätzlichen Pausen eingetragen.</div>
+            <div class="dialog-buttons">
+              <button id="calculateButton" class="win98-button default-button" type="button">Berechnen</button>
+              <button id="resetButton" class="win98-button" type="button">Zurücksetzen</button>
+            </div>
+            <div id="feedback" class="feedback"></div>
+          </fieldset>
+        </div>
+
+        <div class="right-pane">
+          <fieldset class="win98-fieldset result-fieldset">
+            <legend>Ergebnis</legend>
+            <div class="result-panel sunken">
+              <div class="result-row main-result">
+                <div>
+                  <div class="result-label">Feierabend</div>
+                  <div class="result-note">nach den aktuellen Einstellungen</div>
+                </div>
+                <div class="result-value main-value" id="calculatedLeave">--:--</div>
+              </div>
+
+              <div class="result-row target-result">
+                <div>
+                  <div class="result-label">Solluhrzeit</div>
+                  <div class="result-note">selbst gesetzter Feierabend</div>
+                </div>
+                <div class="result-value target-value" id="targetLeave">--:--</div>
+              </div>
+
+              <div class="result-row compact-result">
+                <div>
+                  <div class="result-label">Rest bis Feierabend</div>
+                  <div class="result-note" id="remainingNote">Zeit bis zum berechneten Feierabend ab aktueller Uhrzeit</div>
+                </div>
+                <div class="result-value small-value" id="remainingToLeave">--:-- h</div>
+              </div>
+
+              <div class="result-row compact-result meter" id="overtimeBox">
+                <div>
+                  <div class="result-label">Überstunden bei Solluhrzeit</div>
+                  <div class="result-note">wenn du bis zur Solluhrzeit arbeitest</div>
+                </div>
+                <div class="result-value small-value" id="targetOvertime">±0:00 h</div>
+              </div>
+            </div>
+
+            <details class="settings-details">
+              <summary>Zeige Einstellungen</summary>
+              <div class="settings-list">
+                <div><strong>Startzeit</strong><span id="settingStart">--:--</span></div>
+                <div><strong>Sollzeit</strong><span id="settingWork">--:-- h</span></div>
+                <div><strong>Reguläre Pause</strong><span id="settingFixedBreak">--</span></div>
+                <div><strong>Zusatzpausen</strong><span id="settingCustomBreaks">--</span></div>
+                <div><strong>Gesamte Pause</strong><span id="settingTotalBreaks">--:-- h</span></div>
+                <div><strong>ATOSS-Status</strong><span id="settingAtoss">kein Import</span></div>
+              </div>
+            </details>
+          </fieldset>
         </div>
       </div>
+    </div>
 
-      <div class="timecard">
-        <div class="timecard-head">
-          <div>
-            <div class="group-title">Zusatzpausen</div>
-            <div class="hint">Manuell oder aus ATOSS. Überlappungen werden nur einmal abgezogen.</div>
-          </div>
-          <button id="addPauseButton" type="button">Pause hinzufügen</button>
-        </div>
-        <div id="pauseList" class="pause-list"></div>
-        <div id="pauseHint" class="empty-state">Keine zusätzlichen Pausen eingetragen.</div>
-        <div class="button-row">
-          <button id="calculateButton" class="button-primary" type="button">Berechnen</button>
-          <button id="resetButton" type="button">Zurücksetzen</button>
-        </div>
-        <div id="feedback" class="feedback"></div>
-      </div>
-    </section>
-
-    <section class="module" aria-label="Ergebnis">
-      <div class="module-head"><strong>Ergebnis</strong><span>Bereit</span></div>
-
-      <div class="output-grid">
-        <article class="display main">
-          <div class="display-label">Feierabend</div>
-          <div class="display-value" id="calculatedLeave">--:--</div>
-          <div class="display-note">nach den aktuellen Einstellungen</div>
-        </article>
-        <article class="display green target">
-          <div class="display-label">Solluhrzeit</div>
-          <div class="display-value" id="targetLeave">--:--</div>
-          <div class="display-note">dein selbst gesetzter Feierabend</div>
-        </article>
-      </div>
-
-      <div class="meter-row">
-        <article class="meter">
-          <div class="display-label">Rest bis Feierabend</div>
-          <div class="meter-value" id="remainingToLeave">--:-- h</div>
-          <div class="display-note" id="remainingNote">Zeit bis zum berechneten Feierabend ab aktueller Uhrzeit</div>
-        </article>
-        <article class="meter" id="overtimeBox">
-          <div class="display-label">Überstunden bei Solluhrzeit</div>
-          <div class="meter-value" id="targetOvertime">±0:00 h</div>
-          <div class="display-note">wenn du wirklich bis zur Solluhrzeit arbeitest</div>
-        </article>
-      </div>
-
-      <details>
-        <summary>Zeige Einstellungen</summary>
-        <div class="settings-list">
-          <div><strong>Startzeit</strong><span id="settingStart">--:--</span></div>
-          <div><strong>Sollzeit</strong><span id="settingWork">--:-- h</span></div>
-          <div><strong>Reguläre Pause</strong><span id="settingFixedBreak">--</span></div>
-          <div><strong>Zusatzpausen</strong><span id="settingCustomBreaks">--</span></div>
-          <div><strong>Gesamte Pause</strong><span id="settingTotalBreaks">--:-- h</span></div>
-          <div><strong>ATOSS-Status</strong><span id="settingAtoss">kein Import</span></div>
-        </div>
-      </details>
-    </section>
+    <div class="statusbar">
+      <span class="statusbar-panel">Bereit</span>
+      <span class="statusbar-panel" id="statusAtossMirror">ATOSS: kein Import</span>
+      <span class="statusbar-panel" id="statusClockMirror">--:--</span>
+    </div>
   </main>
+
+  <div class="taskbar" aria-hidden="true">
+    <button class="start-button" type="button" tabindex="-1">Start</button>
+    <div class="task-button active">Zeitrechner.exe</div>
+    <div class="task-spacer"></div>
+    <div class="tray" id="taskClock">--:--</div>
+  </div>
 
   <template id="pauseRowTemplate">
     <div class="pause-row">
       <div class="field">
         <label>Von</label>
-        <input class="pause-from" type="time">
+        <input class="pause-from win98-input" type="time">
       </div>
       <div class="field">
         <label>Bis</label>
-        <input class="pause-to" type="time">
+        <input class="pause-to win98-input" type="time">
       </div>
-      <button class="delete-btn" type="button" data-action="remove" aria-label="Pause löschen">Entfernen</button>
+      <button class="delete-btn win98-button" type="button" data-action="remove" aria-label="Pause löschen">Entfernen</button>
       <div class="pause-row-note">Noch nicht berechnet.</div>
     </div>
   </template>
