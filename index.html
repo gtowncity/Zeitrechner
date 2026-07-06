@@ -4,121 +4,174 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Zeitrechner</title>
-  <meta name="description" content="Retro Zeitrechner mit ATOSS-Import, stabilen Zusatzpausen und Sollzeit-Berechnung.">
+  <meta name="description" content="Atari Timecard Terminal mit ATOSS-Import, stabilen Zusatzpausen und Sollzeit-Berechnung.">
   <style>
     :root {
-      --desktop: #171512;
-      --win: #b9b9b9;
-      --win-dark: #7a7a7a;
-      --win-light: #f4f4f4;
-      --win-mid: #9b9b9b;
-      --crt: #120d07;
-      --crt-2: #1d1308;
-      --amber: #ffb000;
-      --amber-dim: #b77a00;
-      --green: #7cff6b;
-      --green-dim: #2f9d44;
-      --red: #ff704d;
-      --text: #111;
-      --panel-text: #ffd27a;
-      --gap: 12px;
-      --bevel-out: 2px solid var(--win-light);
-      --bevel-in: 2px solid #4a4a4a;
+      --bg: #100E0A;
+      --case: #242018;
+      --case-2: #30291E;
+      --metal: #8A8170;
+      --panel: #C3B8A3;
+      --panel-dark: #A89B84;
+      --crt: #120A03;
+      --crt-soft: #1B0F05;
+      --amber: #FFB547;
+      --amber-dim: #9A6318;
+      --green: #78D66B;
+      --red: #D96A4E;
+      --text-dark: #1B1812;
+      --text-soft: #E8D5A8;
+      --ink: #2A2117;
+      --slot: #332A1D;
+      --slot-dark: #18120C;
+      --gap: 14px;
       --font: "Lucida Console", "Courier New", ui-monospace, monospace;
     }
 
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; }
     body {
-      color: var(--text);
-      background:
-        radial-gradient(circle at 50% 0%, rgba(255,176,0,0.08), transparent 34rem),
-        linear-gradient(180deg, #221d16, var(--desktop));
       font-family: var(--font);
-      padding: 16px;
+      color: var(--text-dark);
+      background:
+        radial-gradient(circle at top left, rgba(255, 181, 71, 0.09), transparent 28rem),
+        radial-gradient(circle at bottom right, rgba(120, 214, 107, 0.045), transparent 24rem),
+        linear-gradient(180deg, #17130d 0%, var(--bg) 100%);
+      padding: 20px;
     }
 
     button, input, select { font-family: inherit; }
 
     .desktop {
-      width: min(980px, 100%);
+      width: min(1040px, 100%);
       margin: 0 auto;
+      padding: clamp(14px, 2.8vw, 26px);
       display: grid;
-      gap: 16px;
+      gap: 18px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.055), transparent 22%),
+        linear-gradient(180deg, var(--case-2), var(--case));
+      border: 3px solid #0b0906;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 213, 151, 0.18),
+        inset 0 -8px 22px rgba(0,0,0,0.34),
+        0 24px 70px rgba(0,0,0,0.42);
+      position: relative;
+    }
+
+    .desktop::before {
+      content: "ATARI TIMECARD TERMINAL // LOCAL MODE";
+      color: rgba(232, 213, 168, 0.55);
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding-left: 2px;
     }
 
     .window {
-      background: var(--win);
-      border-top: var(--bevel-out);
-      border-left: var(--bevel-out);
-      border-right: var(--bevel-in);
-      border-bottom: var(--bevel-in);
-      padding: 3px;
+      padding: 12px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.06), transparent 24%),
+        var(--case-2);
+      border: 1px solid rgba(232, 213, 168, 0.18);
+      box-shadow:
+        inset 0 0 0 2px rgba(0,0,0,0.38),
+        inset 0 1px 0 rgba(255, 213, 151, 0.12);
     }
 
     .titlebar {
-      min-height: 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      padding: 4px 8px;
-      color: #fff;
-      background: linear-gradient(90deg, #202020, #4b3a18);
+      gap: 12px;
+      min-height: 28px;
+      margin-bottom: 10px;
+      padding: 0 2px;
+      color: var(--text-soft);
+      font-size: 0.78rem;
       font-weight: 700;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
-      font-size: 0.9rem;
     }
 
-    .titlebar span:last-child { color: var(--amber); }
+    .titlebar span:first-child::before {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      margin-right: 9px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px rgba(120, 214, 107, 0.75);
+      vertical-align: 1px;
+    }
+
+    .titlebar span:last-child {
+      color: var(--amber);
+      opacity: 0.78;
+    }
 
     .window-body {
-      padding: 14px;
-      border-top: 2px solid var(--win-dark);
-      border-left: 2px solid var(--win-dark);
-      border-right: 2px solid var(--win-light);
-      border-bottom: 2px solid var(--win-light);
-      background: #c7c7c7;
+      padding: clamp(12px, 2vw, 18px);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.20), rgba(0,0,0,0.05)),
+        var(--panel);
+      border: 2px solid #6b604f;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 244, 214, 0.50),
+        inset 0 -2px 0 rgba(88, 75, 57, 0.38);
     }
 
     .crt {
-      color: var(--panel-text);
+      color: var(--text-soft);
       background:
-        repeating-linear-gradient(0deg, rgba(255,176,0,0.035) 0, rgba(255,176,0,0.035) 1px, transparent 1px, transparent 4px),
-        linear-gradient(180deg, var(--crt-2), var(--crt));
-      border-top: 2px solid #050403;
-      border-left: 2px solid #050403;
-      border-right: 2px solid #6b6256;
-      border-bottom: 2px solid #6b6256;
-      padding: 14px;
+        radial-gradient(circle at 50% 0%, rgba(255,181,71,0.10), transparent 45%),
+        repeating-linear-gradient(0deg, rgba(255,181,71,0.045) 0, rgba(255,181,71,0.045) 1px, transparent 1px, transparent 5px),
+        linear-gradient(180deg, var(--crt-soft), var(--crt));
+      border: 2px solid #080502;
+      box-shadow:
+        inset 0 0 0 2px rgba(255,181,71,0.08),
+        inset 0 0 28px rgba(0,0,0,0.62),
+        0 1px 0 rgba(255,255,255,0.16);
+      padding: clamp(14px, 2vw, 20px);
     }
 
     .main-head {
       text-align: center;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
+      position: relative;
+    }
+
+    .main-head::after {
+      content: "ATOSS  LIVE  READY";
+      display: block;
+      margin-top: 12px;
+      color: rgba(232, 213, 168, 0.72);
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
     }
 
     h1 {
       margin: 0 0 8px;
       color: var(--amber);
-      font-size: clamp(2rem, 7vw, 4rem);
-      line-height: 0.95;
-      letter-spacing: 0.05em;
-      text-shadow: 0 0 8px rgba(255,176,0,0.26);
+      font-size: clamp(2.1rem, 7vw, 4.5rem);
+      line-height: 0.92;
+      letter-spacing: 0.07em;
+      text-shadow: 0 0 10px rgba(255,181,71,0.32);
     }
 
     .clock {
       color: var(--amber);
-      font-size: clamp(1.4rem, 5vw, 2.8rem);
+      font-size: clamp(1.5rem, 4.8vw, 3rem);
       font-weight: 700;
-      text-shadow: 0 0 8px rgba(255,176,0,0.28);
+      letter-spacing: 0.04em;
+      text-shadow: 0 0 10px rgba(255,181,71,0.35);
     }
 
     .atoss-status {
       margin-top: 8px;
-      color: #d6b56b;
-      font-size: 0.88rem;
+      color: rgba(232, 213, 168, 0.84);
+      font-size: 0.86rem;
     }
 
     .grid-2, .grid-3 {
@@ -130,61 +183,85 @@
     .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
     .group {
-      border: 2px solid #686868;
-      padding: 10px;
-      background: #d1d1d1;
       margin-top: var(--gap);
+      padding: 14px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.18), rgba(0,0,0,0.05)),
+        var(--panel-dark);
+      border: 1px solid rgba(64, 50, 32, 0.42);
+      box-shadow:
+        inset 0 1px 0 rgba(255,244,214,0.34),
+        inset 0 -1px 0 rgba(61,49,33,0.25);
     }
 
     .group-title {
       margin: 0 0 10px;
+      color: var(--ink);
+      font-size: 0.78rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: #242424;
+      letter-spacing: 0.16em;
     }
 
     label, .label {
       display: block;
       margin-bottom: 6px;
-      font-size: 0.88rem;
+      color: var(--ink);
+      font-size: 0.78rem;
       font-weight: 700;
       text-transform: uppercase;
+      letter-spacing: 0.08em;
     }
 
     input[type="time"], select {
       width: 100%;
-      min-height: 36px;
-      padding: 6px 8px;
-      border-top: 2px solid #474747;
-      border-left: 2px solid #474747;
-      border-right: 2px solid #fff;
-      border-bottom: 2px solid #fff;
+      min-height: 42px;
+      padding: 8px 10px;
+      border: 1px solid rgba(255, 218, 158, 0.20);
+      border-bottom-color: rgba(0,0,0,0.54);
+      border-right-color: rgba(0,0,0,0.48);
       border-radius: 0;
-      background: #efefef;
-      color: #111;
+      background:
+        repeating-linear-gradient(0deg, rgba(255,181,71,0.025) 0, rgba(255,181,71,0.025) 1px, transparent 1px, transparent 5px),
+        var(--slot-dark);
+      color: var(--amber);
       font-size: 1rem;
       outline: none;
+      box-shadow: inset 0 0 16px rgba(0,0,0,0.45);
+    }
+
+    select {
+      appearance: none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, var(--amber) 50%),
+        linear-gradient(135deg, var(--amber) 50%, transparent 50%),
+        repeating-linear-gradient(0deg, rgba(255,181,71,0.025) 0, rgba(255,181,71,0.025) 1px, transparent 1px, transparent 5px),
+        linear-gradient(180deg, #1f160d, var(--slot-dark));
+      background-position: calc(100% - 18px) 17px, calc(100% - 12px) 17px, 0 0, 0 0;
+      background-size: 6px 6px, 6px 6px, auto, auto;
+      background-repeat: no-repeat;
+      padding-right: 34px;
     }
 
     input[type="time"]:focus, select:focus, button:focus, summary:focus {
-      outline: 2px dotted #000;
+      outline: 2px solid var(--amber);
       outline-offset: 2px;
     }
 
     .target-input {
-      background: #081308 !important;
       color: var(--green) !important;
-      border-right-color: var(--green-dim) !important;
-      border-bottom-color: var(--green-dim) !important;
-      text-shadow: 0 0 5px rgba(124,255,107,0.32);
+      border-color: rgba(120, 214, 107, 0.34) !important;
+      background:
+        repeating-linear-gradient(0deg, rgba(120,214,107,0.035) 0, rgba(120,214,107,0.035) 1px, transparent 1px, transparent 5px),
+        #071107 !important;
+      text-shadow: 0 0 6px rgba(120,214,107,0.36);
     }
 
     .hint {
       margin-top: 6px;
-      color: #333;
-      font-size: 0.8rem;
-      line-height: 1.35;
+      color: rgba(27,24,18,0.74);
+      font-size: 0.76rem;
+      line-height: 1.45;
     }
 
     .switch-line {
@@ -193,23 +270,21 @@
       align-items: center;
       gap: 12px;
       margin-top: var(--gap);
-      padding: 10px;
-      border: 2px solid #777;
-      background: #cfcfcf;
+      padding: 12px;
+      background: rgba(36,32,24,0.12);
+      border: 1px solid rgba(36,32,24,0.25);
     }
 
-    .switch-line strong { display: block; margin-bottom: 4px; }
-    .switch-line small { color: #333; line-height: 1.4; }
-
-    .switch input { width: 22px; height: 22px; accent-color: var(--amber); }
-
+    .switch-line strong { display: block; margin-bottom: 4px; letter-spacing: 0.05em; }
+    .switch-line small { color: rgba(27,24,18,0.76); line-height: 1.4; }
+    .switch input { width: 26px; height: 26px; accent-color: var(--amber); }
     .custom-row[hidden] { display: none !important; }
 
     .pause-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       margin-bottom: 10px;
     }
 
@@ -220,134 +295,150 @@
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
       gap: 8px;
       align-items: end;
-      padding: 8px;
-      border: 2px solid #808080;
-      background: #bebebe;
+      padding: 10px;
+      background:
+        linear-gradient(90deg, rgba(18,10,3,0.10) 0 12px, transparent 12px),
+        #B7AA91;
+      border-left: 5px solid var(--amber-dim);
+      border-top: 1px solid rgba(255,244,214,0.30);
+      border-bottom: 1px solid rgba(44,35,24,0.28);
     }
 
-    .pause-row.invalid { background: #c4a09a; }
+    .pause-row.invalid { border-left-color: var(--red); background: #b99a8a; }
     .pause-row-note {
       grid-column: 1 / -1;
       min-height: 1.1rem;
-      color: #333;
-      font-size: 0.78rem;
+      color: rgba(27,24,18,0.76);
+      font-size: 0.76rem;
       line-height: 1.35;
     }
 
     .empty-state {
-      padding: 10px;
-      border: 2px dashed #777;
-      color: #333;
-      background: #cfcfcf;
-      font-size: 0.85rem;
+      padding: 12px;
+      color: rgba(27,24,18,0.72);
+      background: rgba(36,32,24,0.10);
+      border: 1px dashed rgba(36,32,24,0.30);
+      font-size: 0.82rem;
     }
 
     .button-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
       margin-top: var(--gap);
     }
 
     button, summary {
-      min-height: 34px;
-      padding: 7px 12px;
-      border-top: 2px solid #fff;
-      border-left: 2px solid #fff;
-      border-right: 2px solid #333;
-      border-bottom: 2px solid #333;
-      background: #bdbdbd;
-      color: #111;
+      min-height: 38px;
+      padding: 8px 13px;
+      border: 1px solid #534638;
+      border-top-color: rgba(255,244,214,0.55);
+      border-left-color: rgba(255,244,214,0.40);
       border-radius: 0;
+      background: linear-gradient(180deg, #D0C3AB, #968A73);
+      color: var(--text-dark);
       font-weight: 700;
       text-transform: uppercase;
+      letter-spacing: 0.04em;
       cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.28);
     }
 
     button:active, summary:active {
-      border-top-color: #333;
-      border-left-color: #333;
-      border-right-color: #fff;
-      border-bottom-color: #fff;
+      border-top-color: #534638;
+      border-left-color: #534638;
+      border-right-color: rgba(255,244,214,0.50);
+      border-bottom-color: rgba(255,244,214,0.55);
       transform: translate(1px, 1px);
     }
 
     .button-primary {
-      background: #3b3b3b;
       color: var(--amber);
+      background: linear-gradient(180deg, #46351f, #17110a);
+      text-shadow: 0 0 6px rgba(255,181,71,0.30);
     }
 
     .delete-btn {
-      min-width: 40px;
+      min-width: 36px;
+      padding-inline: 9px;
       color: var(--red);
-      font-size: 1.1rem;
+      background: linear-gradient(180deg, #3B2A20, #1A120C);
+      font-size: 1rem;
     }
 
     .feedback {
       display: none;
       margin-top: var(--gap);
       padding: 10px;
-      border: 2px solid #777;
-      background: #cecece;
-      font-size: 0.85rem;
+      border: 1px solid rgba(36,32,24,0.30);
+      background: rgba(36,32,24,0.12);
+      font-size: 0.82rem;
       line-height: 1.45;
     }
     .feedback.show { display: block; }
-    .feedback.success { color: #064d18; background: #b9d7b7; }
-    .feedback.warning { color: #6d3b00; background: #dcc39a; }
-    .feedback.danger { color: #731b10; background: #d9aaa0; }
+    .feedback.success { color: #0b4a15; background: rgba(120,214,107,0.18); }
+    .feedback.warning { color: #6b4307; background: rgba(255,181,71,0.18); }
+    .feedback.danger { color: #6a1d12; background: rgba(217,106,78,0.20); }
 
     .result-top {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1.18fr 0.82fr;
       gap: var(--gap);
       margin-bottom: var(--gap);
     }
 
+    .readout, .mini-readout {
+      color: var(--amber);
+      background:
+        radial-gradient(circle at 50% 0%, rgba(255,181,71,0.09), transparent 55%),
+        repeating-linear-gradient(0deg, rgba(255,181,71,0.045) 0, rgba(255,181,71,0.045) 1px, transparent 1px, transparent 5px),
+        #120A03;
+      border: 2px solid #070402;
+      box-shadow:
+        inset 0 0 0 2px rgba(255,181,71,0.07),
+        inset 0 0 26px rgba(0,0,0,0.70);
+      padding: 16px;
+    }
+
     .readout {
-      min-height: 128px;
+      min-height: 150px;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      color: var(--amber);
-      background:
-        repeating-linear-gradient(0deg, rgba(255,176,0,0.04) 0, rgba(255,176,0,0.04) 1px, transparent 1px, transparent 4px),
-        #130d05;
-      border-top: 2px solid #050403;
-      border-left: 2px solid #050403;
-      border-right: 2px solid #6b6256;
-      border-bottom: 2px solid #6b6256;
-      padding: 14px;
     }
 
-    .readout.green {
+    .readout.green, .mini-readout.green {
       color: var(--green);
       background:
-        repeating-linear-gradient(0deg, rgba(124,255,107,0.035) 0, rgba(124,255,107,0.035) 1px, transparent 1px, transparent 4px),
+        radial-gradient(circle at 50% 0%, rgba(120,214,107,0.08), transparent 55%),
+        repeating-linear-gradient(0deg, rgba(120,214,107,0.035) 0, rgba(120,214,107,0.035) 1px, transparent 1px, transparent 5px),
         #061006;
     }
 
+    .mini-readout.red { color: var(--red); }
+
     .readout-label {
       color: inherit;
-      opacity: 0.88;
-      font-size: 0.9rem;
+      opacity: 0.84;
+      font-size: 0.78rem;
       font-weight: 700;
       text-transform: uppercase;
-      margin-bottom: 8px;
+      letter-spacing: 0.10em;
+      margin-bottom: 10px;
     }
 
     .readout-value {
-      font-size: clamp(2rem, 7vw, 4rem);
-      line-height: 0.96;
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      line-height: 0.92;
       font-weight: 700;
-      text-shadow: 0 0 8px currentColor;
+      text-shadow: 0 0 10px currentColor;
     }
 
     .readout-note {
-      margin-top: 8px;
-      color: #d8b56d;
-      font-size: 0.82rem;
-      line-height: 1.4;
+      margin-top: 10px;
+      color: rgba(232,213,168,0.74);
+      font-size: 0.78rem;
+      line-height: 1.45;
     }
 
     .result-line {
@@ -357,39 +448,27 @@
       margin-top: var(--gap);
     }
 
-    .mini-readout {
-      color: var(--amber);
-      background: #181008;
-      border-top: 2px solid #050403;
-      border-left: 2px solid #050403;
-      border-right: 2px solid #6b6256;
-      border-bottom: 2px solid #6b6256;
-      padding: 12px;
-    }
-
-    .mini-readout.green { color: var(--green); }
-    .mini-readout.red { color: var(--red); }
-
     .mini-value {
       margin-top: 8px;
-      font-size: clamp(1.4rem, 4vw, 2.3rem);
+      font-size: clamp(1.55rem, 4.2vw, 2.7rem);
+      line-height: 1;
       font-weight: 700;
-      text-shadow: 0 0 6px currentColor;
+      text-shadow: 0 0 8px currentColor;
     }
 
     details {
       margin-top: var(--gap);
-      border: 2px solid #777;
-      background: #cfcfcf;
+      background: var(--panel-dark);
+      border: 1px solid rgba(64,50,32,0.36);
     }
 
     summary { display: block; }
 
     .settings-list {
-      padding: 10px;
+      padding: 12px;
       display: grid;
-      gap: 6px;
-      font-size: 0.86rem;
+      gap: 7px;
+      font-size: 0.82rem;
       line-height: 1.45;
     }
 
@@ -397,25 +476,27 @@
       display: grid;
       grid-template-columns: 180px 1fr;
       gap: 10px;
-      border-bottom: 1px dotted #777;
-      padding-bottom: 4px;
+      padding-bottom: 5px;
+      border-bottom: 1px dotted rgba(36,32,24,0.36);
     }
 
     @media (max-width: 760px) {
       body { padding: 8px; }
-      .window-body { padding: 8px; }
+      .desktop { padding: 10px; }
+      .window, .window-body { padding: 10px; }
       .grid-2, .grid-3, .result-top, .result-line, .pause-row { grid-template-columns: 1fr; }
       .switch-line, .pause-head { align-items: stretch; flex-direction: column; }
       .button-row { flex-direction: column; }
       button { width: 100%; }
       .settings-list div { grid-template-columns: 1fr; }
+      .readout { min-height: 120px; }
     }
   </style>
 </head>
 <body>
   <main class="desktop">
     <section class="window" aria-labelledby="inputTitle">
-      <div class="titlebar"><span>Eingabe-Konsole</span><span>ATARI/CRT</span></div>
+      <div class="titlebar"><span>Input Module</span><span>Timecard Unit A</span></div>
       <div class="window-body">
         <div class="crt main-head">
           <h1 id="inputTitle">ZEITRECHNER</h1>
@@ -493,7 +574,7 @@
         <div class="group">
           <div class="pause-head">
             <div>
-              <div class="group-title">Zusätzliche Pausen</div>
+              <div class="group-title">Zusatzpausen / Timecard Entries</div>
               <div class="hint">Manuell oder aus ATOSS. Überlappungen werden nur einmal abgezogen.</div>
             </div>
             <button id="addPauseButton" type="button">Pause hinzufügen</button>
@@ -512,7 +593,7 @@
     </section>
 
     <section class="window" aria-labelledby="resultTitle">
-      <div class="titlebar"><span>Ergebnis-Konsole</span><span>READY</span></div>
+      <div class="titlebar"><span>Output Module</span><span>Ready</span></div>
       <div class="window-body">
         <div class="crt">
           <div class="result-top">
@@ -993,7 +1074,6 @@
       }
 
       const { validCustom, invalid, incomplete } = getPauseAnalysis();
-      const fixedBreak = getFixedBreak();
       els.settingStart.textContent = startMinutes === null ? '--:--' : formatClock(startMinutes);
       els.settingCustomBreaks.textContent = validCustom.length
         ? validCustom.map((p) => `${formatClock(p.start)}-${formatClock(p.end)}`).join(', ')
