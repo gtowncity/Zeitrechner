@@ -12,7 +12,6 @@
   --success: #008000;
   --danger: #800000;
   --desktop-gray: #bfbfbf;
-  --paper: #fffff0;
 }
 
 * {
@@ -64,9 +63,9 @@ summary {
 }
 
 .app-window {
-  width: 744px;
+  width: 812px;
   max-width: calc(100vw - 24px);
-  margin: 18px auto;
+  margin: 16px auto;
   background: var(--face);
   box-shadow: 2px 2px 0 rgba(0, 0, 0, .38);
 }
@@ -216,21 +215,21 @@ summary {
 .toolbar-icon.atoss { background: #a2e0a2; }
 
 .window-body {
-  padding: 7px;
+  padding: 8px;
   background: var(--face);
 }
 
 .program-header {
-  min-height: 54px;
+  min-height: 56px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
-  margin-bottom: 7px;
-  padding: 6px 7px;
-  background: var(--paper);
-  border-top: 2px solid var(--dark-shadow);
-  border-left: 2px solid var(--dark-shadow);
+  margin-bottom: 8px;
+  padding: 7px 8px;
+  background: var(--face);
+  border-top: 2px solid var(--shadow);
+  border-left: 2px solid var(--shadow);
   border-right: 2px solid var(--white);
   border-bottom: 2px solid var(--white);
 }
@@ -278,9 +277,9 @@ summary {
 }
 
 .program-header h1 {
-  margin: 0 0 2px;
+  margin: 0 0 3px;
   color: var(--title);
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1;
 }
 
@@ -298,29 +297,33 @@ summary {
 
 .ready-line {
   display: flex;
-  gap: 8px;
-  color: #333;
+  gap: 3px;
+  color: #222;
   font-size: 10px;
   line-height: 1;
 }
 
+.ready-line span {
+  min-width: 38px;
+  padding: 2px 4px;
+  background: var(--button-face);
+  text-align: center;
+  border-top: 1px solid var(--white);
+  border-left: 1px solid var(--white);
+  border-right: 1px solid var(--shadow);
+  border-bottom: 1px solid var(--shadow);
+}
+
 .ready-line span::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  display: inline-block;
-  margin-right: 3px;
-  background: var(--success);
-  border: 1px solid #333;
-  vertical-align: -1px;
+  content: none;
 }
 
 .clock-box {
-  min-width: 122px;
+  min-width: 130px;
   padding: 4px 6px;
   background: #fff;
   font-family: "Lucida Console", "Courier New", monospace;
-  font-size: 22px;
+  font-size: 23px;
   font-weight: 700;
   line-height: 1;
   text-align: right;
@@ -328,7 +331,7 @@ summary {
 
 .window-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 236px;
+  grid-template-columns: minmax(0, 1fr) 276px;
   gap: 8px;
   align-items: start;
 }
@@ -338,14 +341,23 @@ summary {
   min-width: 0;
 }
 
+.right-pane {
+  display: grid;
+  gap: 8px;
+}
+
 .win98-fieldset {
-  margin: 0 0 7px;
-  padding: 8px 7px 7px;
+  margin: 0 0 8px;
+  padding: 9px 8px 8px;
   background: var(--face);
   border-top: 2px solid var(--shadow);
   border-left: 2px solid var(--shadow);
   border-right: 2px solid var(--white);
   border-bottom: 2px solid var(--white);
+}
+
+.right-pane .win98-fieldset {
+  margin-bottom: 0;
 }
 
 .win98-fieldset legend {
@@ -357,14 +369,14 @@ summary {
 
 .form-row {
   display: grid;
-  grid-template-columns: 96px 126px 1fr;
+  grid-template-columns: 104px 132px 1fr;
   gap: 6px;
   align-items: center;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
 
 .model-row {
-  grid-template-columns: 96px 174px 1fr;
+  grid-template-columns: 104px 184px 1fr;
 }
 
 .form-row label,
@@ -385,16 +397,16 @@ summary {
 }
 
 .time-control {
-  width: 126px;
+  width: 132px;
 }
 
 .select-control {
-  width: 174px;
+  width: 184px;
 }
 
 .target-input {
-  background: #e8f6e8;
-  color: var(--success);
+  background: #fff;
+  color: var(--text);
   font-weight: 700;
 }
 
@@ -409,7 +421,7 @@ summary {
 }
 
 .form-hint {
-  margin: 2px 0 0 102px;
+  margin: 2px 0 0 110px;
 }
 
 .checkbox-form-row {
@@ -448,20 +460,26 @@ summary {
 }
 
 .pause-box {
-  height: 62px;
+  min-height: 72px;
+  max-height: 112px;
+  height: auto;
   padding: 2px;
   background: #fff;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .pause-list {
   display: grid;
-  gap: 2px;
+  gap: 0;
 }
 
 .empty-state {
-  height: 56px;
-  padding: 4px;
+  min-height: 66px;
+  height: auto;
+  display: flex;
+  align-items: center;
+  padding: 4px 6px;
   background: #fff;
   color: #555;
   font-size: 11px;
@@ -469,15 +487,16 @@ summary {
 
 .pause-row {
   display: grid;
-  grid-template-columns: auto 70px auto 70px 62px;
+  grid-template-columns: auto 74px auto 74px 66px;
   gap: 5px;
   align-items: center;
-  padding: 3px;
-  background: var(--face);
-  border-top: 1px solid var(--white);
-  border-left: 1px solid var(--white);
-  border-right: 1px solid var(--shadow);
-  border-bottom: 1px solid var(--shadow);
+  padding: 3px 4px;
+  background: #fff;
+  border-bottom: 1px dotted var(--shadow);
+}
+
+.pause-row:last-child {
+  border-bottom: 0;
 }
 
 .pause-row.invalid {
@@ -496,7 +515,7 @@ summary {
 }
 
 .main-buttons {
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 .default-button {
@@ -535,12 +554,13 @@ summary {
 
 .result-fieldset,
 .summary-fieldset {
-  padding: 8px 7px 7px;
+  padding: 9px 8px 8px;
 }
 
 .lcd-panel {
-  padding: 6px;
-  margin-bottom: 6px;
+  min-height: 90px;
+  padding: 7px;
+  margin-bottom: 7px;
   background: #fff;
 }
 
@@ -550,17 +570,17 @@ summary {
 }
 
 .lcd-value {
-  margin-top: 4px;
+  margin-top: 5px;
   color: #000;
   font-family: "Lucida Console", "Courier New", monospace;
-  font-size: 32px;
+  font-size: 37px;
   font-weight: 700;
   line-height: 1;
   text-align: right;
 }
 
 .lcd-note {
-  margin-top: 3px;
+  margin-top: 4px;
   text-align: right;
 }
 
@@ -572,12 +592,12 @@ summary {
 
 .kv-row,
 .result-list .meter {
-  min-height: 22px;
+  min-height: 25px;
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 6px;
+  gap: 7px;
   align-items: center;
-  padding: 3px 4px;
+  padding: 4px 5px;
   border-bottom: 1px solid var(--face);
   background: #fff;
   font-size: 11px;
@@ -591,12 +611,12 @@ summary {
 .kv-row strong,
 .result-list .meter strong {
   font-family: "Lucida Console", "Courier New", monospace;
-  font-size: 14px;
+  font-size: 16px;
   white-space: nowrap;
 }
 
 .kv-help {
-  padding: 2px 4px 4px;
+  padding: 2px 5px 5px;
   border-bottom: 1px solid var(--face);
 }
 
@@ -614,9 +634,9 @@ summary {
 
 .summary-list div {
   display: grid;
-  grid-template-columns: 70px 1fr;
-  gap: 4px;
-  padding: 2px 3px;
+  grid-template-columns: 76px 1fr;
+  gap: 5px;
+  padding: 3px 4px;
   border-bottom: 1px dotted var(--shadow);
 }
 
@@ -666,7 +686,7 @@ summary:focus {
   padding-right: 4px;
 }
 
-@media (max-width: 780px) {
+@media (max-width: 840px) {
   body {
     padding: 0;
   }
