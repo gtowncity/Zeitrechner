@@ -4,25 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Zeitrechner.exe</title>
-  <meta name="description" content="Arbeitszeitrechner im Stil eines echten Windows-98-Utilities mit ATOSS-Import und Zusatzpausen.">
+  <meta name="description" content="Arbeitszeitrechner im Stil eines Windows-98-Utility-Programms mit ATOSS-Import und Zusatzpausen.">
   <link rel="stylesheet" href="win98.css">
 </head>
 <body>
-  <div class="desktop-icons" aria-hidden="true">
-    <div class="desktop-icon">
-      <div class="desktop-icon-img pc"></div>
-      <div class="desktop-icon-label">Arbeitsplatz</div>
-    </div>
-    <div class="desktop-icon">
-      <div class="desktop-icon-img folder"></div>
-      <div class="desktop-icon-label">ATOSS<br>Import</div>
-    </div>
-    <div class="desktop-icon selected">
-      <div class="desktop-icon-img app"></div>
-      <div class="desktop-icon-label">Zeitrechner</div>
-    </div>
-  </div>
-
   <main class="win98-window app-window" role="application" aria-label="Zeitrechner.exe">
     <div class="titlebar">
       <div class="titlebar-left">
@@ -60,7 +45,7 @@
         <div class="clock-box" id="currentClock">--:--:--</div>
       </section>
 
-      <div class="content-grid">
+      <div class="window-layout">
         <div class="left-pane">
           <fieldset class="win98-fieldset">
             <legend>Arbeitszeit</legend>
@@ -135,62 +120,51 @@
             </div>
             <div id="pauseList" class="pause-list sunken-list"></div>
             <div id="pauseHint" class="empty-state sunken">Keine zusätzlichen Pausen eingetragen.</div>
-            <div class="dialog-buttons">
-              <button id="calculateButton" class="win98-button default-button" type="button">Berechnen</button>
-              <button id="resetButton" class="win98-button" type="button">Zurücksetzen</button>
-            </div>
             <div id="feedback" class="feedback"></div>
           </fieldset>
+
+          <div class="dialog-buttons main-buttons">
+            <button id="calculateButton" class="win98-button default-button" type="button">Berechnen</button>
+            <button id="resetButton" class="win98-button" type="button">Zurücksetzen</button>
+          </div>
         </div>
 
         <div class="right-pane">
           <fieldset class="win98-fieldset result-fieldset">
             <legend>Ergebnis</legend>
-            <div class="result-panel sunken">
-              <div class="result-row main-result">
-                <div>
-                  <div class="result-label">Feierabend</div>
-                  <div class="result-note">nach den aktuellen Einstellungen</div>
-                </div>
-                <div class="result-value main-value" id="calculatedLeave">--:--</div>
-              </div>
 
-              <div class="result-row target-result">
-                <div>
-                  <div class="result-label">Solluhrzeit</div>
-                  <div class="result-note">selbst gesetzter Feierabend</div>
-                </div>
-                <div class="result-value target-value" id="targetLeave">--:--</div>
-              </div>
+            <div class="result-display sunken">
+              <div class="result-display-label">Feierabend</div>
+              <div class="result-display-value" id="calculatedLeave">--:--</div>
+              <div class="result-display-sub">nach aktuellen Einstellungen</div>
+            </div>
 
-              <div class="result-row compact-result">
-                <div>
-                  <div class="result-label">Rest bis Feierabend</div>
-                  <div class="result-note" id="remainingNote">Zeit bis zum berechneten Feierabend ab aktueller Uhrzeit</div>
-                </div>
-                <div class="result-value small-value" id="remainingToLeave">--:-- h</div>
+            <div class="result-table sunken">
+              <div class="result-table-row">
+                <span>Solluhrzeit</span>
+                <strong id="targetLeave">--:--</strong>
               </div>
-
-              <div class="result-row compact-result meter" id="overtimeBox">
-                <div>
-                  <div class="result-label">Überstunden bei Solluhrzeit</div>
-                  <div class="result-note">wenn du bis zur Solluhrzeit arbeitest</div>
-                </div>
-                <div class="result-value small-value" id="targetOvertime">±0:00 h</div>
+              <div class="result-table-row">
+                <span>Restzeit</span>
+                <strong id="remainingToLeave">--:-- h</strong>
+              </div>
+              <div class="result-table-note" id="remainingNote">
+                Zeit bis zum berechneten Feierabend ab aktueller Uhrzeit
+              </div>
+              <div class="result-table-row" id="overtimeBox">
+                <span>Überstunden</span>
+                <strong id="targetOvertime">±0:00 h</strong>
               </div>
             </div>
 
-            <details class="settings-details">
-              <summary>Zeige Einstellungen</summary>
-              <div class="settings-list">
-                <div><strong>Startzeit</strong><span id="settingStart">--:--</span></div>
-                <div><strong>Sollzeit</strong><span id="settingWork">--:-- h</span></div>
-                <div><strong>Reguläre Pause</strong><span id="settingFixedBreak">--</span></div>
-                <div><strong>Zusatzpausen</strong><span id="settingCustomBreaks">--</span></div>
-                <div><strong>Gesamte Pause</strong><span id="settingTotalBreaks">--:-- h</span></div>
-                <div><strong>ATOSS-Status</strong><span id="settingAtoss">kein Import</span></div>
-              </div>
-            </details>
+            <div class="settings-panel sunken">
+              <div><span>Startzeit</span><strong id="settingStart">--:--</strong></div>
+              <div><span>Sollzeit</span><strong id="settingWork">--:-- h</strong></div>
+              <div><span>Reguläre Pause</span><strong id="settingFixedBreak">--</strong></div>
+              <div><span>Zusatzpausen</span><strong id="settingCustomBreaks">--</strong></div>
+              <div><span>Gesamte Pause</span><strong id="settingTotalBreaks">--:-- h</strong></div>
+              <div><span>ATOSS</span><strong id="settingAtoss">kein Import</strong></div>
+            </div>
           </fieldset>
         </div>
       </div>
@@ -202,13 +176,6 @@
       <span class="statusbar-panel" id="statusClockMirror">--:--</span>
     </div>
   </main>
-
-  <div class="taskbar" aria-hidden="true">
-    <button class="start-button" type="button" tabindex="-1">Start</button>
-    <div class="task-button active">Zeitrechner.exe</div>
-    <div class="task-spacer"></div>
-    <div class="tray" id="taskClock">--:--</div>
-  </div>
 
   <template id="pauseRowTemplate">
     <div class="pause-row">
